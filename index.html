@@ -30,8 +30,8 @@
             position: relative;
         }
 
-        /* PANIC SCREEN (Vollbild-Tarnbild) */
-        #panic-screen {
+        /* VOLLBILD DOKUMENTENANSICHT */
+        #quick-view-screen {
             position: fixed;
             top: 0;
             left: 0;
@@ -42,13 +42,13 @@
             display: none;
         }
 
-        #panic-img {
+        #quick-view-img {
             width: 100%;
             height: 100%;
             object-fit: contain;
         }
 
-        /* UNSICHTBARER TRIGER UNTEN RECHTS */
+        /* UNSICHTBARER BEREICH UNTEN RECHTS */
         #secret-bottom-right {
             position: fixed;
             bottom: 0;
@@ -66,8 +66,8 @@
             left: 0;
             width: 100vw;
             height: 100vh;
-            background: rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(3px);
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(4px);
             z-index: 10000;
             display: none;
             justify-content: center;
@@ -78,9 +78,9 @@
             background: #ffffff;
             padding: 25px;
             border-radius: 12px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
             text-align: center;
-            width: 300px;
+            width: 310px;
         }
 
         .modal-box h3 {
@@ -251,9 +251,9 @@
 </head>
 <body>
 
-    <!-- PANIC SCREEN -->
-    <div id="panic-screen">
-        <img id="panic-img" src="" alt="Tarnbild">
+    <!-- VOLLBILD DOKUMENTENANSICHT (SCHNELLANSICHT) -->
+    <div id="quick-view-screen">
+        <img id="quick-view-img" src="" alt="Präsentationsdokument">
     </div>
 
     <!-- UNSICHTBARES FELD UNTEN RECHTS -->
@@ -262,13 +262,13 @@
     <!-- CODE POPUP -->
     <div id="code-modal" class="modal-overlay">
         <div class="modal-box">
-            <h3>Sicherheits-Code</h3>
-            <input type="password" id="code-input" placeholder="Code eingeben" maxlength="10">
+            <h3>Authentifizierung</h3>
+            <input type="password" id="code-input" placeholder="Zugangscode" maxlength="10">
             <div class="modal-buttons">
-                <button onclick="submitCode()">Aktivieren</button>
+                <button onclick="submitCode()">Bestätigen</button>
                 <button class="btn-cancel" onclick="closeCodeModal()">Abbrechen</button>
             </div>
-            <p id="code-error" style="color: #ef4444; font-size: 12px; margin-top: 10px; display: none;">Falscher Code!</p>
+            <p id="code-error" style="color: #ef4444; font-size: 12px; margin-top: 10px; display: none;">Ungültiger Code!</p>
         </div>
     </div>
 
@@ -281,7 +281,7 @@
             <li class="nav-item active" id="nav-dashboard" onclick="switchView('dashboard')">Dashboard</li>
             <li class="nav-item" id="nav-flashcards" onclick="switchView('flashcards')">Karteikarten</li>
             <li class="nav-item" id="nav-settings" onclick="switchView('settings')">Einstellungen</li>
-            <!-- Versteckter BitLife Menüpunkt -->
+            <!-- Verstecktes Modul -->
             <li class="nav-item" id="nav-game" style="display: none;" onclick="switchView('game')">🎮 BitLife</li>
         </ul>
         <div class="sidebar-footer">
@@ -326,19 +326,19 @@
 
         <!-- EINSTELLUNGEN -->
         <div id="settings" class="view">
-            <h1>Einstellungen & Datenschutz</h1>
+            <h1>Einstellungen & Optionen</h1>
             
             <div class="settings-group">
-                <h3>Panic-Button Taste festlegen</h3>
-                <p class="info-text">Wähle die Taste, die sofort deinen Lernzettel im Vollbild anzeigt und das Spiel sperrt.</p>
+                <h3>Schnellansicht-Shortcut</h3>
+                <p class="info-text">Lege eine Taste fest, um deine Notizen oder dein Lernskript sofort im Vollbild einzublenden.</p>
                 <br>
                 <button id="bind-key-btn">Taste festlegen (Aktuell: <span id="current-key-display">Escape</span>)</button>
-                <p id="binding-status" style="color: #ef4444; margin-top: 10px; display: none;">Drücke jetzt eine Taste...</p>
+                <p id="binding-status" style="color: #ef4444; margin-top: 10px; display: none;">Drücke jetzt eine Taste auf deiner Tastatur...</p>
             </div>
 
             <div class="settings-group">
-                <h3>Tarn-Bild hochladen</h3>
-                <p class="info-text">Lade einen Screenshot deiner Notizen oder einer Tabelle hoch.</p>
+                <h3>Präsentations-Dokument hochladen</h3>
+                <p class="info-text">Lade eine Vorlage (z. B. Screenshot deiner Unterlagen oder Tabelle) für die Schnellansicht hoch.</p>
                 <input type="file" id="image-upload" accept="image/png, image/jpeg, image/webp">
                 <p id="upload-status" style="margin-top: 10px; font-weight: bold;"></p>
             </div>
@@ -346,8 +346,8 @@
 
         <!-- SPIEL-BEREICH (BitLife) -->
         <div id="game" class="view">
-            <h1>BitLife Simulator</h1>
-            <p class="info-text" style="margin-bottom: 15px;">Drücke deine Panic-Taste, um sofort zum Tarnbild zu wechseln und das Spiel zu sperren.</p>
+            <h1>Zusatzmodul: BitLife</h1>
+            <p class="info-text" style="margin-bottom: 15px;">Drücke deine festgelegte Schnellansicht-Taste, um sofort zum Dokument zu wechseln.</p>
             <iframe id="bitlife-frame" class="game-container" src="about:blank" allowfullscreen></iframe>
         </div>
 
@@ -355,18 +355,17 @@
 
     <script>
         // --- 1. System-Variablen & LocalStorage ---
-        let panicKey = localStorage.getItem('studyHub_panicKey') || 'Escape';
-        let decoyImage = localStorage.getItem('studyHub_decoyImage') || '';
+        let shortcutKey = localStorage.getItem('studyHub_shortcutKey') || 'Escape';
+        let docImage = localStorage.getItem('studyHub_docImage') || '';
         let isBindingKey = false;
-        let isPanicActive = false;
-        let isGameUnlocked = false;
+        let isQuickViewActive = false;
 
         const GAME_URL = "https://sz-games.github.io/Games9/bitlife";
 
-        // Startwerte setzen
-        document.getElementById('current-key-display').innerText = panicKey === ' ' ? 'Leertaste' : panicKey;
-        if(decoyImage) {
-            document.getElementById('panic-img').src = decoyImage;
+        // Startwerte in UI eintragen
+        document.getElementById('current-key-display').innerText = shortcutKey === ' ' ? 'Leertaste' : shortcutKey;
+        if(docImage) {
+            document.getElementById('quick-view-img').src = docImage;
         }
 
         // --- 2. Navigation ---
@@ -379,7 +378,7 @@
             if(activeNav) activeNav.classList.add('active');
         }
 
-        // --- 3. Geheimcode Modal & Aktivierung ---
+        // --- 3. Code-Modal & Freischaltung ---
         function openCodeModal() {
             document.getElementById('code-modal').style.display = 'flex';
             document.getElementById('code-input').value = '';
@@ -391,7 +390,6 @@
             document.getElementById('code-modal').style.display = 'none';
         }
 
-        // Code mit Enter-Taste abschicken
         document.getElementById('code-input').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
                 submitCode();
@@ -402,18 +400,16 @@
             const enteredCode = document.getElementById('code-input').value;
             if (enteredCode === '5555') {
                 closeCodeModal();
-                unlockBitlife();
+                unlockModule();
             } else {
                 document.getElementById('code-error').style.display = 'block';
             }
         }
 
-        function unlockBitlife() {
-            isGameUnlocked = true;
+        function unlockModule() {
             const gameNav = document.getElementById('nav-game');
             gameNav.style.display = 'block';
             
-            // Frame-URL laden
             const frame = document.getElementById('bitlife-frame');
             if (frame.src !== GAME_URL) {
                 frame.src = GAME_URL;
@@ -422,66 +418,60 @@
             switchView('game');
         }
 
-        function lockBitlife() {
-            isGameUnlocked = false;
-            // Menüpunkt ausblenden
+        function lockModule() {
             document.getElementById('nav-game').style.display = 'none';
-            // BitLife entladen, damit kein Ton im Hintergrund weiterläuft
             document.getElementById('bitlife-frame').src = 'about:blank';
-            // Zurück zum Dashboard wechseln
             switchView('dashboard');
         }
 
-        // --- 4. Panic-Button & Tastatur-Events ---
+        // --- 4. Schnellansicht-Shortcut & Tastatur-Events ---
         document.addEventListener('keydown', (e) => {
-            // Taste belegen
+            // Neue Taste belegen
             if (isBindingKey) {
                 e.preventDefault();
-                panicKey = e.key;
-                localStorage.setItem('studyHub_panicKey', panicKey);
+                shortcutKey = e.key;
+                localStorage.setItem('studyHub_shortcutKey', shortcutKey);
                 
-                document.getElementById('current-key-display').innerText = panicKey === ' ' ? 'Leertaste' : panicKey;
+                document.getElementById('current-key-display').innerText = shortcutKey === ' ' ? 'Leertaste' : shortcutKey;
                 document.getElementById('binding-status').style.display = 'none';
                 isBindingKey = false;
                 return;
             }
 
-            // Panic-Taste gedrückt
-            if (e.key.toLowerCase() === panicKey.toLowerCase() || e.key === panicKey) {
-                togglePanic();
+            // Shortcut gedrückt
+            if (e.key.toLowerCase() === shortcutKey.toLowerCase() || e.key === shortcutKey) {
+                toggleQuickView();
             }
         });
 
-        function togglePanic() {
-            const screen = document.getElementById('panic-screen');
-            isPanicActive = !isPanicActive;
+        function toggleQuickView() {
+            const screen = document.getElementById('quick-view-screen');
+            isQuickViewActive = !isQuickViewActive;
             
-            if (isPanicActive) {
-                if(!document.getElementById('panic-img').src) {
-                    alert("Bitte erst ein Tarn-Bild in den Einstellungen hochladen!");
-                    isPanicActive = false;
+            if (isQuickViewActive) {
+                if(!document.getElementById('quick-view-img').src) {
+                    alert("Bitte erst ein Präsentations-Dokument in den Einstellungen hochladen!");
+                    isQuickViewActive = false;
                     return;
                 }
                 
-                // 1. Tarnbild im Vollbild anzeigen
+                // 1. Dokument im Vollbild einblenden
                 screen.style.display = 'block';
                 
-                // 2. BitLife sofort im Hintergrund sperren & stummschalten
-                lockBitlife();
+                // 2. Modul sofort stummschalten und sperren
+                lockModule();
             } else {
-                // Tarnbild wieder ausblenden
+                // Dokument wieder ausblenden
                 screen.style.display = 'none';
-                // Nach dem Aufheben ist man sicher auf dem Dashboard (BitLife ist gesperrt)
             }
         }
 
-        // Taste festlegen Button
         document.getElementById('bind-key-btn').addEventListener('click', () => {
             isBindingKey = true;
             document.getElementById('binding-status').style.display = 'block';
         });
 
-        // --- 5. Bild-Upload ---
+        // --- 5. Dokument-Upload ---
         const fileInput = document.getElementById('image-upload');
         const statusText = document.getElementById('upload-status');
 
@@ -489,7 +479,7 @@
             const file = e.target.files[0];
             if (file) {
                 if(file.size > 4 * 1024 * 1024) {
-                    statusText.innerText = "Fehler: Bild ist zu groß (unter 4MB bleiben)!";
+                    statusText.innerText = "Fehler: Datei ist zu groß (maximal 4MB)!";
                     statusText.style.color = "red";
                     return;
                 }
@@ -498,12 +488,12 @@
                 reader.onload = function(event) {
                     const dataUrl = event.target.result;
                     try {
-                        localStorage.setItem('studyHub_decoyImage', dataUrl);
-                        document.getElementById('panic-img').src = dataUrl;
-                        statusText.innerText = "Tarn-Bild gespeichert!";
+                        localStorage.setItem('studyHub_docImage', dataUrl);
+                        document.getElementById('quick-view-img').src = dataUrl;
+                        statusText.innerText = "Dokument erfolgreich gespeichert!";
                         statusText.style.color = "green";
                     } catch (err) {
-                        statusText.innerText = "Fehler beim Speichern des Bildes.";
+                        statusText.innerText = "Fehler beim Speichern des Dokumentes.";
                         statusText.style.color = "red";
                     }
                 };
