@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>StudyHub - Digitales Lernen</title>
     <style>
-        /* CSS: Modernes, minimalistisches Design */
         :root {
             --primary: #2563eb;
             --sidebar-bg: #1e293b;
@@ -28,9 +27,10 @@
             height: 100vh;
             display: flex;
             overflow: hidden;
+            position: relative;
         }
 
-        /* Panic Screen - Legt sich über alles */
+        /* PANIC SCREEN (Vollbild-Tarnbild) */
         #panic-screen {
             position: fixed;
             top: 0;
@@ -38,17 +38,91 @@
             width: 100vw;
             height: 100vh;
             background-color: #ffffff;
-            z-index: 9999;
-            display: none; /* Standardmäßig versteckt */
+            z-index: 99999;
+            display: none;
         }
 
         #panic-img {
             width: 100%;
             height: 100%;
-            object-fit: contain; /* Bild wird nicht verzerrt */
+            object-fit: contain;
         }
 
-        /* Layout: Sidebar & Content */
+        /* UNSICHTBARER TRIGER UNTEN RECHTS */
+        #secret-bottom-right {
+            position: fixed;
+            bottom: 0;
+            right: 0;
+            width: 40px;
+            height: 40px;
+            z-index: 999;
+            cursor: default;
+        }
+
+        /* CODE POPUP MODAL */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(3px);
+            z-index: 10000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-box {
+            background: #ffffff;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            text-align: center;
+            width: 300px;
+        }
+
+        .modal-box h3 {
+            margin-bottom: 15px;
+            color: #0f172a;
+            font-size: 18px;
+        }
+
+        .modal-box input {
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+            text-align: center;
+            border: 2px solid #cbd5e1;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            outline: none;
+            letter-spacing: 4px;
+        }
+
+        .modal-box input:focus {
+            border-color: var(--primary);
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .modal-buttons button {
+            flex: 1;
+        }
+
+        .btn-cancel {
+            background-color: #64748b !important;
+        }
+
+        .btn-cancel:hover {
+            background-color: #475569 !important;
+        }
+
+        /* LAYOUT: SIDEBAR & CONTENT */
         .sidebar {
             width: 250px;
             background-color: var(--sidebar-bg);
@@ -91,12 +165,6 @@
             font-size: 12px;
             color: #64748b;
             text-align: center;
-            cursor: default;
-        }
-
-        /* Geheim: Klick auf Version öffnet das Spiel */
-        #secret-trigger {
-            cursor: pointer;
         }
 
         .main-content {
@@ -105,10 +173,10 @@
             overflow-y: auto;
         }
 
-        /* Views (Ansichten) */
         .view {
             display: none;
         }
+
         .view.active {
             display: block;
         }
@@ -119,7 +187,6 @@
             color: #0f172a;
         }
 
-        /* Karten / Dashboard-Elemente */
         .card-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -138,7 +205,6 @@
             color: var(--primary);
         }
 
-        /* Formulare & Buttons in Einstellungen */
         .settings-group {
             margin-bottom: 25px;
             background: var(--card-bg);
@@ -173,10 +239,10 @@
             margin-top: 5px;
         }
 
-        /* Iframe für das Spiel */
+        /* GAME IFRAME */
         .game-container {
             width: 100%;
-            height: calc(100vh - 120px);
+            height: calc(100vh - 140px);
             border: none;
             border-radius: 10px;
             background-color: #000;
@@ -185,9 +251,25 @@
 </head>
 <body>
 
-    <!-- PANIC SCREEN (Versteckt bis die Taste gedrückt wird) -->
+    <!-- PANIC SCREEN -->
     <div id="panic-screen">
-        <img id="panic-img" src="" alt="Lernzettel">
+        <img id="panic-img" src="" alt="Tarnbild">
+    </div>
+
+    <!-- UNSICHTBARES FELD UNTEN RECHTS -->
+    <div id="secret-bottom-right" onclick="openCodeModal()"></div>
+
+    <!-- CODE POPUP -->
+    <div id="code-modal" class="modal-overlay">
+        <div class="modal-box">
+            <h3>Sicherheits-Code</h3>
+            <input type="password" id="code-input" placeholder="Code eingeben" maxlength="10">
+            <div class="modal-buttons">
+                <button onclick="submitCode()">Aktivieren</button>
+                <button class="btn-cancel" onclick="closeCodeModal()">Abbrechen</button>
+            </div>
+            <p id="code-error" style="color: #ef4444; font-size: 12px; margin-top: 10px; display: none;">Falscher Code!</p>
+        </div>
     </div>
 
     <!-- SIDEBAR -->
@@ -196,22 +278,21 @@
             📚 StudyHub
         </div>
         <ul class="nav-links">
-            <li class="nav-item active" onclick="switchView('dashboard')">Dashboard</li>
-            <li class="nav-item" onclick="switchView('flashcards')">Karteikarten</li>
-            <li class="nav-item" onclick="switchView('settings')">Einstellungen</li>
-            <!-- Versteckter Menüpunkt, der nur über das Skript aktiviert wird -->
-            <li class="nav-item" id="nav-game" style="display: none;" onclick="switchView('game')">🎮 Pause (Läd...)</li>
+            <li class="nav-item active" id="nav-dashboard" onclick="switchView('dashboard')">Dashboard</li>
+            <li class="nav-item" id="nav-flashcards" onclick="switchView('flashcards')">Karteikarten</li>
+            <li class="nav-item" id="nav-settings" onclick="switchView('settings')">Einstellungen</li>
+            <!-- Versteckter BitLife Menüpunkt -->
+            <li class="nav-item" id="nav-game" style="display: none;" onclick="switchView('game')">🎮 BitLife</li>
         </ul>
-        <!-- Der Klick auf die Version öffnet den geheimen Spiele-Bereich -->
         <div class="sidebar-footer">
-            Version <span id="secret-trigger">1.4.2</span>
+            Version 1.4.2
         </div>
     </div>
 
     <!-- MAIN CONTENT -->
     <div class="main-content">
         
-        <!-- DASHBOARD (Standard Lernansicht) -->
+        <!-- DASHBOARD -->
         <div id="dashboard" class="view active">
             <h1>Übersicht</h1>
             <div class="card-grid">
@@ -233,7 +314,7 @@
             </div>
         </div>
 
-        <!-- KARTEIKARTEN (Tarn-Aktivität) -->
+        <!-- KARTEIKARTEN -->
         <div id="flashcards" class="view">
             <h1>Aktiver Lernmodus</h1>
             <div class="card" style="min-height: 300px; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;">
@@ -243,13 +324,13 @@
             </div>
         </div>
 
-        <!-- EINSTELLUNGEN (Panic-Button & Bild Setup) -->
+        <!-- EINSTELLUNGEN -->
         <div id="settings" class="view">
             <h1>Einstellungen & Datenschutz</h1>
             
             <div class="settings-group">
                 <h3>Panic-Button Taste festlegen</h3>
-                <p class="info-text">Wähle die Taste, die sofort deinen Lernzettel im Vollbild anzeigt.</p>
+                <p class="info-text">Wähle die Taste, die sofort deinen Lernzettel im Vollbild anzeigt und das Spiel sperrt.</p>
                 <br>
                 <button id="bind-key-btn">Taste festlegen (Aktuell: <span id="current-key-display">Escape</span>)</button>
                 <p id="binding-status" style="color: #ef4444; margin-top: 10px; display: none;">Drücke jetzt eine Taste...</p>
@@ -257,124 +338,158 @@
 
             <div class="settings-group">
                 <h3>Tarn-Bild hochladen</h3>
-                <p class="info-text">Lade einen Screenshot deiner Notizen, einer Excel-Tabelle oder eines Skripts hoch. (Max. 3MB empfohlen)</p>
+                <p class="info-text">Lade einen Screenshot deiner Notizen oder einer Tabelle hoch.</p>
                 <input type="file" id="image-upload" accept="image/png, image/jpeg, image/webp">
                 <p id="upload-status" style="margin-top: 10px; font-weight: bold;"></p>
             </div>
         </div>
 
-        <!-- SPIEL-BEREICH (Versteckt) -->
+        <!-- SPIEL-BEREICH (BitLife) -->
         <div id="game" class="view">
-            <h1>Pausen-Modul</h1>
-            <p class="info-text" style="margin-bottom: 15px;">Drücke deine Panic-Taste, falls jemand kommt.</p>
-            <!-- Hier kannst du die src des iframes auf dein gewünschtes Spiel setzen -->
-            <iframe class="game-container" src="https://sz-games.github.io/Games9/bitlife" allowfullscreen></iframe>
+            <h1>BitLife Simulator</h1>
+            <p class="info-text" style="margin-bottom: 15px;">Drücke deine Panic-Taste, um sofort zum Tarnbild zu wechseln und das Spiel zu sperren.</p>
+            <iframe id="bitlife-frame" class="game-container" src="about:blank" allowfullscreen></iframe>
         </div>
 
     </div>
 
-    <!-- JAVASCRIPT -->
     <script>
-        // --- 1. Navigation & Ansichten wechseln ---
-        function switchView(viewId) {
-            // Alle Views ausblenden
-            document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
-            // Alle Nav-Items zurücksetzen
-            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-            
-            // Ausgewählte View anzeigen
-            document.getElementById(viewId).classList.add('active');
-            
-            // Aktiven Menüpunkt markieren
-            event.currentTarget.classList.add('active');
-        }
-
-        // --- 2. Geheimer Trigger für das Spiel ---
-        let secretClicks = 0;
-        document.getElementById('secret-trigger').addEventListener('click', () => {
-            secretClicks++;
-            if(secretClicks === 3) {
-                // Spiel-Menüpunkt einblenden
-                const gameNav = document.getElementById('nav-game');
-                gameNav.style.display = 'block';
-                gameNav.click(); // Direkt dorthin wechseln
-                secretClicks = 0; // Reset
-            }
-            // Reset Clicks nach 2 Sekunden, wenn nicht schnell genug
-            setTimeout(() => { secretClicks = 0; }, 2000);
-        });
-
-        // --- 3. Panic-Button Logik & LocalStorage ---
-        
-        // Werte aus LocalStorage laden oder Defaults setzen
+        // --- 1. System-Variablen & LocalStorage ---
         let panicKey = localStorage.getItem('studyHub_panicKey') || 'Escape';
         let decoyImage = localStorage.getItem('studyHub_decoyImage') || '';
         let isBindingKey = false;
         let isPanicActive = false;
+        let isGameUnlocked = false;
 
-        // UI beim Start aktualisieren
+        const GAME_URL = "https://sz-games.github.io/Games9/bitlife";
+
+        // Startwerte setzen
         document.getElementById('current-key-display').innerText = panicKey === ' ' ? 'Leertaste' : panicKey;
         if(decoyImage) {
             document.getElementById('panic-img').src = decoyImage;
         }
 
-        // Tasten-Event-Listener für die ganze Seite
+        // --- 2. Navigation ---
+        function switchView(viewId) {
+            document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            
+            document.getElementById(viewId).classList.add('active');
+            const activeNav = document.getElementById('nav-' + viewId);
+            if(activeNav) activeNav.classList.add('active');
+        }
+
+        // --- 3. Geheimcode Modal & Aktivierung ---
+        function openCodeModal() {
+            document.getElementById('code-modal').style.display = 'flex';
+            document.getElementById('code-input').value = '';
+            document.getElementById('code-error').style.display = 'none';
+            document.getElementById('code-input').focus();
+        }
+
+        function closeCodeModal() {
+            document.getElementById('code-modal').style.display = 'none';
+        }
+
+        // Code mit Enter-Taste abschicken
+        document.getElementById('code-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                submitCode();
+            }
+        });
+
+        function submitCode() {
+            const enteredCode = document.getElementById('code-input').value;
+            if (enteredCode === '5555') {
+                closeCodeModal();
+                unlockBitlife();
+            } else {
+                document.getElementById('code-error').style.display = 'block';
+            }
+        }
+
+        function unlockBitlife() {
+            isGameUnlocked = true;
+            const gameNav = document.getElementById('nav-game');
+            gameNav.style.display = 'block';
+            
+            // Frame-URL laden
+            const frame = document.getElementById('bitlife-frame');
+            if (frame.src !== GAME_URL) {
+                frame.src = GAME_URL;
+            }
+            
+            switchView('game');
+        }
+
+        function lockBitlife() {
+            isGameUnlocked = false;
+            // Menüpunkt ausblenden
+            document.getElementById('nav-game').style.display = 'none';
+            // BitLife entladen, damit kein Ton im Hintergrund weiterläuft
+            document.getElementById('bitlife-frame').src = 'about:blank';
+            // Zurück zum Dashboard wechseln
+            switchView('dashboard');
+        }
+
+        // --- 4. Panic-Button & Tastatur-Events ---
         document.addEventListener('keydown', (e) => {
-            // Modus: Neue Taste festlegen
+            // Taste belegen
             if (isBindingKey) {
-                e.preventDefault(); // Verhindert z.B. Scrollen bei Leertaste
+                e.preventDefault();
                 panicKey = e.key;
                 localStorage.setItem('studyHub_panicKey', panicKey);
                 
-                // UI Update
-                let displayKey = panicKey === ' ' ? 'Leertaste' : panicKey;
-                document.getElementById('current-key-display').innerText = displayKey;
-                
+                document.getElementById('current-key-display').innerText = panicKey === ' ' ? 'Leertaste' : panicKey;
                 document.getElementById('binding-status').style.display = 'none';
                 isBindingKey = false;
                 return;
             }
 
-            // Normaler Modus: Prüfen ob Panic-Taste gedrückt wurde
-            // Wichtig: Groß-/Kleinschreibung ignorieren, um Probleme mit CapsLock zu vermeiden
+            // Panic-Taste gedrückt
             if (e.key.toLowerCase() === panicKey.toLowerCase() || e.key === panicKey) {
                 togglePanic();
             }
         });
 
-        // Toggle Funktion für den Panic-Screen
         function togglePanic() {
             const screen = document.getElementById('panic-screen');
             isPanicActive = !isPanicActive;
             
             if (isPanicActive) {
                 if(!document.getElementById('panic-img').src) {
-                    alert("Du hast noch kein Tarn-Bild in den Einstellungen hochgeladen!");
+                    alert("Bitte erst ein Tarn-Bild in den Einstellungen hochladen!");
                     isPanicActive = false;
                     return;
                 }
+                
+                // 1. Tarnbild im Vollbild anzeigen
                 screen.style.display = 'block';
+                
+                // 2. BitLife sofort im Hintergrund sperren & stummschalten
+                lockBitlife();
             } else {
+                // Tarnbild wieder ausblenden
                 screen.style.display = 'none';
+                // Nach dem Aufheben ist man sicher auf dem Dashboard (BitLife ist gesperrt)
             }
         }
 
-        // Button um Tastenbelegung zu starten
+        // Taste festlegen Button
         document.getElementById('bind-key-btn').addEventListener('click', () => {
             isBindingKey = true;
             document.getElementById('binding-status').style.display = 'block';
         });
 
-        // --- 4. Tarn-Bild Upload (wird in Base64 in LocalStorage gespeichert) ---
+        // --- 5. Bild-Upload ---
         const fileInput = document.getElementById('image-upload');
         const statusText = document.getElementById('upload-status');
 
         fileInput.addEventListener('change', (e) => {
             const file = e.target.files[0];
             if (file) {
-                // Größe prüfen (ca. 4MB Limit für LocalStorage in vielen Browsern)
                 if(file.size > 4 * 1024 * 1024) {
-                    statusText.innerText = "Fehler: Bild ist zu groß! Bitte verkleinern (unter 4MB).";
+                    statusText.innerText = "Fehler: Bild ist zu groß (unter 4MB bleiben)!";
                     statusText.style.color = "red";
                     return;
                 }
@@ -383,15 +498,12 @@
                 reader.onload = function(event) {
                     const dataUrl = event.target.result;
                     try {
-                        // In LocalStorage speichern
                         localStorage.setItem('studyHub_decoyImage', dataUrl);
-                        // Direkt in das IMG-Tag laden
                         document.getElementById('panic-img').src = dataUrl;
-                        
-                        statusText.innerText = "Tarn-Bild erfolgreich gespeichert!";
+                        statusText.innerText = "Tarn-Bild gespeichert!";
                         statusText.style.color = "green";
                     } catch (err) {
-                        statusText.innerText = "Fehler beim Speichern. Das Bild ist wahrscheinlich zu groß für den Browser-Speicher.";
+                        statusText.innerText = "Fehler beim Speichern des Bildes.";
                         statusText.style.color = "red";
                     }
                 };
