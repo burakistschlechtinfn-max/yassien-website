@@ -1,198 +1,403 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>BitLife Simulator</title>
-  
-  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StudyHub - Digitales Lernen</title>
+    <style>
+        /* CSS: Modernes, minimalistisches Design */
+        :root {
+            --primary: #2563eb;
+            --sidebar-bg: #1e293b;
+            --sidebar-text: #cbd5e1;
+            --bg-color: #f1f5f9;
+            --card-bg: #ffffff;
+            --text-main: #334155;
+        }
 
-  <style>
-    * {
-      box-sizing: border-box;
-    }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
 
-    body, html {
-      margin: 0;
-      padding: 0;
-      width: 100%;
-      height: 100%;
-      overflow: hidden;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background-color: #121212;
-      color: #ffffff;
-    }
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            height: 100vh;
+            display: flex;
+            overflow: hidden;
+        }
 
-    /* Ladebildschirm Container */
-    #loading-screen {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-color: #1e1e1e;
-      z-index: 100;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      transition: opacity 0.5s ease;
-    }
+        /* Panic Screen - Legt sich über alles */
+        #panic-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: #ffffff;
+            z-index: 9999;
+            display: none; /* Standardmäßig versteckt */
+        }
 
-    .loading-content {
-      text-align: center;
-      max-width: 400px;
-      width: 80%;
-    }
+        #panic-img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain; /* Bild wird nicht verzerrt */
+        }
 
-    .loading-title {
-      font-size: 32px;
-      margin-bottom: 8px;
-      font-weight: 600;
-    }
+        /* Layout: Sidebar & Content */
+        .sidebar {
+            width: 250px;
+            background-color: var(--sidebar-bg);
+            color: white;
+            display: flex;
+            flex-direction: column;
+        }
 
-    .loading-percentage {
-      font-size: 18px;
-      color: #a0a0a0;
-      margin-bottom: 20px;
-    }
+        .logo {
+            padding: 20px;
+            font-size: 24px;
+            font-weight: bold;
+            border-bottom: 1px solid #334155;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
 
-    /* Fortschrittsbalken */
-    .loader-bar {
-      width: 100%;
-      height: 6px;
-      background-color: rgba(255, 255, 255, 0.1);
-      border-radius: 3px;
-      overflow: hidden;
-      position: relative;
-    }
+        .nav-links {
+            list-style: none;
+            flex-grow: 1;
+            padding-top: 20px;
+        }
 
-    .loader-progress {
-      position: absolute;
-      top: 0;
-      left: 0;
-      height: 100%;
-      width: 0%;
-      background-color: #007bff;
-      border-radius: 3px;
-      animation: progress-animation 1.5s ease-in-out infinite;
-    }
+        .nav-links li {
+            padding: 15px 20px;
+            color: var(--sidebar-text);
+            cursor: pointer;
+            transition: 0.2s;
+        }
 
-    @keyframes progress-animation {
-      0% { width: 0%; left: 0; }
-      50% { width: 100%; left: 0; }
-      100% { width: 0%; left: 100%; }
-    }
+        .nav-links li:hover, .nav-links li.active {
+            background-color: #334155;
+            color: white;
+            border-left: 4px solid var(--primary);
+        }
 
-    /* Steuerungs-Menü unten links */
-    #menu {
-      position: fixed;
-      bottom: 15px;
-      left: 15px;
-      background-color: rgba(30, 30, 30, 0.75);
-      backdrop-filter: blur(5px);
-      border-radius: 10px;
-      padding: 5px;
-      display: flex;
-      gap: 10px;
-      z-index: 10;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-    }
+        .sidebar-footer {
+            padding: 15px;
+            font-size: 12px;
+            color: #64748b;
+            text-align: center;
+            cursor: default;
+        }
 
-    .menu-button {
-      color: #e0e0e0;
-      cursor: pointer;
-      padding: 8px;
-      border-radius: 6px;
-      transition: background-color 0.2s, color 0.2s;
-      user-select: none;
-    }
+        /* Geheim: Klick auf Version öffnet das Spiel */
+        #secret-trigger {
+            cursor: pointer;
+        }
 
-    .menu-button:hover {
-      background-color: rgba(255, 255, 255, 0.1);
-      color: #ffffff;
-    }
+        .main-content {
+            flex-grow: 1;
+            padding: 40px;
+            overflow-y: auto;
+        }
 
-    /* Game Frame */
-    #game-frame {
-      width: 100%;
-      height: 100%;
-      border: none;
-      display: block;
-    }
-  </style>
+        /* Views (Ansichten) */
+        .view {
+            display: none;
+        }
+        .view.active {
+            display: block;
+        }
+
+        h1 {
+            font-size: 28px;
+            margin-bottom: 20px;
+            color: #0f172a;
+        }
+
+        /* Karten / Dashboard-Elemente */
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .card h3 {
+            margin-bottom: 10px;
+            color: var(--primary);
+        }
+
+        /* Formulare & Buttons in Einstellungen */
+        .settings-group {
+            margin-bottom: 25px;
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: 0.2s;
+        }
+
+        button:hover {
+            background-color: #1d4ed8;
+        }
+
+        input[type="file"] {
+            display: block;
+            margin-top: 10px;
+        }
+
+        .info-text {
+            font-size: 13px;
+            color: #64748b;
+            margin-top: 5px;
+        }
+
+        /* Iframe für das Spiel */
+        .game-container {
+            width: 100%;
+            height: calc(100vh - 120px);
+            border: none;
+            border-radius: 10px;
+            background-color: #000;
+        }
+    </style>
 </head>
 <body>
 
-  <!-- Ladebildschirm -->
-  <div id="loading-screen">
-    <div class="loading-content">
-      <div class="loading-title">BitLife</div>
-      <div id="loading-percentage" class="loading-percentage">0%</div>
-      <div class="loader-bar">
-        <div class="loader-progress"></div>
-      </div>
+    <!-- PANIC SCREEN (Versteckt bis die Taste gedrückt wird) -->
+    <div id="panic-screen">
+        <img id="panic-img" src="" alt="Lernzettel">
     </div>
-  </div>
 
-  <!-- Spiel-Einbindung -->
-  <iframe id="game-frame" src="https://sz-games.github.io/Games9/bitlife" allowfullscreen></iframe>
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+        <div class="logo">
+            📚 StudyHub
+        </div>
+        <ul class="nav-links">
+            <li class="nav-item active" onclick="switchView('dashboard')">Dashboard</li>
+            <li class="nav-item" onclick="switchView('flashcards')">Karteikarten</li>
+            <li class="nav-item" onclick="switchView('settings')">Einstellungen</li>
+            <!-- Versteckter Menüpunkt, der nur über das Skript aktiviert wird -->
+            <li class="nav-item" id="nav-game" style="display: none;" onclick="switchView('game')">🎮 Pause (Läd...)</li>
+        </ul>
+        <!-- Der Klick auf die Version öffnet den geheimen Spiele-Bereich -->
+        <div class="sidebar-footer">
+            Version <span id="secret-trigger">1.4.2</span>
+        </div>
+    </div>
 
-  <!-- Steuerungselemente -->
-  <div id="menu">
-    <span class="material-icons menu-button" title="Seite neu laden" onclick="location.reload();">refresh</span>
-    <span class="material-icons menu-button" title="Vollbild" onclick="toggleFullScreen();">fullscreen</span>
-  </div>
+    <!-- MAIN CONTENT -->
+    <div class="main-content">
+        
+        <!-- DASHBOARD (Standard Lernansicht) -->
+        <div id="dashboard" class="view active">
+            <h1>Übersicht</h1>
+            <div class="card-grid">
+                <div class="card">
+                    <h3>Mathe: Analysis</h3>
+                    <p>Fortschritt: 75%</p>
+                    <p class="info-text">Letztes Lernen: Heute</p>
+                </div>
+                <div class="card">
+                    <h3>Englisch: Vokabeln</h3>
+                    <p>Fortschritt: 40%</p>
+                    <p class="info-text">Letztes Lernen: Gestern</p>
+                </div>
+                <div class="card">
+                    <h3>Biologie: Genetik</h3>
+                    <p>Fortschritt: 90%</p>
+                    <p class="info-text">Prüfung in 3 Tagen</p>
+                </div>
+            </div>
+        </div>
 
-  <script>
-    // Ladeanzeige-Logik
-    window.addEventListener('DOMContentLoaded', function() {
-      const totalResources = document.getElementsByTagName('*').length;
-      let loadedResources = 0;
-      const percentageElement = document.getElementById('loading-percentage');
+        <!-- KARTEIKARTEN (Tarn-Aktivität) -->
+        <div id="flashcards" class="view">
+            <h1>Aktiver Lernmodus</h1>
+            <div class="card" style="min-height: 300px; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;">
+                <h2 style="color: #64748b; font-weight: normal; margin-bottom: 20px;">Frage:</h2>
+                <h3 style="font-size: 24px; margin-bottom: 40px; color: #0f172a;">Was ist die 1. Ableitung von f(x) = x³?</h3>
+                <button>Antwort anzeigen</button>
+            </div>
+        </div>
 
-      function updateProgress() {
-        loadedResources++;
-        const percentage = Math.min(Math.round((loadedResources / totalResources) * 100), 100);
-        percentageElement.textContent = percentage + '%';
-      }
+        <!-- EINSTELLUNGEN (Panic-Button & Bild Setup) -->
+        <div id="settings" class="view">
+            <h1>Einstellungen & Datenschutz</h1>
+            
+            <div class="settings-group">
+                <h3>Panic-Button Taste festlegen</h3>
+                <p class="info-text">Wähle die Taste, die sofort deinen Lernzettel im Vollbild anzeigt.</p>
+                <br>
+                <button id="bind-key-btn">Taste festlegen (Aktuell: <span id="current-key-display">Escape</span>)</button>
+                <p id="binding-status" style="color: #ef4444; margin-top: 10px; display: none;">Drücke jetzt eine Taste...</p>
+            </div>
 
-      const elements = document.getElementsByTagName('*');
-      for (let i = 0; i < elements.length; i++) {
-        elements[i].addEventListener('load', updateProgress);
-        elements[i].addEventListener('error', updateProgress);
-      }
-    });
+            <div class="settings-group">
+                <h3>Tarn-Bild hochladen</h3>
+                <p class="info-text">Lade einen Screenshot deiner Notizen, einer Excel-Tabelle oder eines Skripts hoch. (Max. 3MB empfohlen)</p>
+                <input type="file" id="image-upload" accept="image/png, image/jpeg, image/webp">
+                <p id="upload-status" style="margin-top: 10px; font-weight: bold;"></p>
+            </div>
+        </div>
 
-    // Ladebildschirm ausblenden, sobald alles geladen ist
-    window.addEventListener('load', function() {
-      const loadingScreen = document.getElementById('loading-screen');
-      document.getElementById('loading-percentage').textContent = '100%';
-      
-      loadingScreen.style.opacity = '0';
-      setTimeout(() => {
-        loadingScreen.style.display = 'none';
-      }, 500);
-    });
+        <!-- SPIEL-BEREICH (Versteckt) -->
+        <div id="game" class="view">
+            <h1>Pausen-Modul</h1>
+            <p class="info-text" style="margin-bottom: 15px;">Drücke deine Panic-Taste, falls jemand kommt.</p>
+            <!-- Hier kannst du die src des iframes auf dein gewünschtes Spiel setzen -->
+            <iframe class="game-container" src="https://sz-games.github.io/Games9/bitlife" allowfullscreen></iframe>
+        </div>
 
-    // Vollbild-Funktionsaufruf
-    function toggleFullScreen() {
-      const elem = document.getElementById('game-frame');
-      if (!document.fullscreenElement) {
-        if (elem.requestFullscreen) {
-          elem.requestFullscreen();
-        } else if (elem.webkitRequestFullscreen) { /* Safari */
-          elem.webkitRequestFullscreen();
-        } else if (elem.msRequestFullscreen) { /* IE11 */
-          elem.msRequestFullscreen();
+    </div>
+
+    <!-- JAVASCRIPT -->
+    <script>
+        // --- 1. Navigation & Ansichten wechseln ---
+        function switchView(viewId) {
+            // Alle Views ausblenden
+            document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
+            // Alle Nav-Items zurücksetzen
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            
+            // Ausgewählte View anzeigen
+            document.getElementById(viewId).classList.add('active');
+            
+            // Aktiven Menüpunkt markieren
+            event.currentTarget.classList.add('active');
         }
-      } else {
-        if (document.exitFullscreen) {
-          document.exitFullscreen();
-        }
-      }
-    }
-  </script>
 
+        // --- 2. Geheimer Trigger für das Spiel ---
+        let secretClicks = 0;
+        document.getElementById('secret-trigger').addEventListener('click', () => {
+            secretClicks++;
+            if(secretClicks === 3) {
+                // Spiel-Menüpunkt einblenden
+                const gameNav = document.getElementById('nav-game');
+                gameNav.style.display = 'block';
+                gameNav.click(); // Direkt dorthin wechseln
+                secretClicks = 0; // Reset
+            }
+            // Reset Clicks nach 2 Sekunden, wenn nicht schnell genug
+            setTimeout(() => { secretClicks = 0; }, 2000);
+        });
+
+        // --- 3. Panic-Button Logik & LocalStorage ---
+        
+        // Werte aus LocalStorage laden oder Defaults setzen
+        let panicKey = localStorage.getItem('studyHub_panicKey') || 'Escape';
+        let decoyImage = localStorage.getItem('studyHub_decoyImage') || '';
+        let isBindingKey = false;
+        let isPanicActive = false;
+
+        // UI beim Start aktualisieren
+        document.getElementById('current-key-display').innerText = panicKey === ' ' ? 'Leertaste' : panicKey;
+        if(decoyImage) {
+            document.getElementById('panic-img').src = decoyImage;
+        }
+
+        // Tasten-Event-Listener für die ganze Seite
+        document.addEventListener('keydown', (e) => {
+            // Modus: Neue Taste festlegen
+            if (isBindingKey) {
+                e.preventDefault(); // Verhindert z.B. Scrollen bei Leertaste
+                panicKey = e.key;
+                localStorage.setItem('studyHub_panicKey', panicKey);
+                
+                // UI Update
+                let displayKey = panicKey === ' ' ? 'Leertaste' : panicKey;
+                document.getElementById('current-key-display').innerText = displayKey;
+                
+                document.getElementById('binding-status').style.display = 'none';
+                isBindingKey = false;
+                return;
+            }
+
+            // Normaler Modus: Prüfen ob Panic-Taste gedrückt wurde
+            // Wichtig: Groß-/Kleinschreibung ignorieren, um Probleme mit CapsLock zu vermeiden
+            if (e.key.toLowerCase() === panicKey.toLowerCase() || e.key === panicKey) {
+                togglePanic();
+            }
+        });
+
+        // Toggle Funktion für den Panic-Screen
+        function togglePanic() {
+            const screen = document.getElementById('panic-screen');
+            isPanicActive = !isPanicActive;
+            
+            if (isPanicActive) {
+                if(!document.getElementById('panic-img').src) {
+                    alert("Du hast noch kein Tarn-Bild in den Einstellungen hochgeladen!");
+                    isPanicActive = false;
+                    return;
+                }
+                screen.style.display = 'block';
+            } else {
+                screen.style.display = 'none';
+            }
+        }
+
+        // Button um Tastenbelegung zu starten
+        document.getElementById('bind-key-btn').addEventListener('click', () => {
+            isBindingKey = true;
+            document.getElementById('binding-status').style.display = 'block';
+        });
+
+        // --- 4. Tarn-Bild Upload (wird in Base64 in LocalStorage gespeichert) ---
+        const fileInput = document.getElementById('image-upload');
+        const statusText = document.getElementById('upload-status');
+
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                // Größe prüfen (ca. 4MB Limit für LocalStorage in vielen Browsern)
+                if(file.size > 4 * 1024 * 1024) {
+                    statusText.innerText = "Fehler: Bild ist zu groß! Bitte verkleinern (unter 4MB).";
+                    statusText.style.color = "red";
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const dataUrl = event.target.result;
+                    try {
+                        // In LocalStorage speichern
+                        localStorage.setItem('studyHub_decoyImage', dataUrl);
+                        // Direkt in das IMG-Tag laden
+                        document.getElementById('panic-img').src = dataUrl;
+                        
+                        statusText.innerText = "Tarn-Bild erfolgreich gespeichert!";
+                        statusText.style.color = "green";
+                    } catch (err) {
+                        statusText.innerText = "Fehler beim Speichern. Das Bild ist wahrscheinlich zu groß für den Browser-Speicher.";
+                        statusText.style.color = "red";
+                    }
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    </script>
 </body>
 </html>
