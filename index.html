@@ -282,7 +282,7 @@
             <li class="nav-item" id="nav-flashcards" onclick="switchView('flashcards')">Karteikarten</li>
             <li class="nav-item" id="nav-settings" onclick="switchView('settings')">Einstellungen</li>
             <!-- Verstecktes Modul -->
-            <li class="nav-item" id="nav-game" style="display: none;" onclick="switchView('game')">🎮 BitLife</li>
+            <li class="nav-item" id="nav-game" style="display: none;" onclick="switchView('game')">🎮 Zusatzmodul</li>
         </ul>
         <div class="sidebar-footer">
             Version 1.4.2
@@ -346,8 +346,9 @@
 
         <!-- SPIEL-BEREICH (BitLife) -->
         <div id="game" class="view">
-            <h1>Zusatzmodul: BitLife</h1>
+            <h1>Zusatzmodul</h1>
             <p class="info-text" style="margin-bottom: 15px;">Drücke deine festgelegte Schnellansicht-Taste, um sofort zum Dokument zu wechseln.</p>
+            <!-- WICHTIG: src bleibt nach dem ersten Laden erhalten, das iframe wird nur versteckt -->
             <iframe id="bitlife-frame" class="game-container" src="about:blank" allowfullscreen></iframe>
         </div>
 
@@ -411,6 +412,8 @@
             gameNav.style.display = 'block';
             
             const frame = document.getElementById('bitlife-frame');
+            // Nur laden, wenn es noch nicht geladen wurde. So bleibt der Spielstand erhalten, 
+            // wenn man das Modul erneut entsperrt.
             if (frame.src !== GAME_URL) {
                 frame.src = GAME_URL;
             }
@@ -419,8 +422,13 @@
         }
 
         function lockModule() {
+            // Verstecke den Menüpunkt im Sidebar
             document.getElementById('nav-game').style.display = 'none';
-            document.getElementById('bitlife-frame').src = 'about:blank';
+            
+            // WICHTIGE ÄNDERUNG: Wir löschen NICHT die src des iframes, damit das Spiel im Hintergrund geladen bleibt!
+            // document.getElementById('bitlife-frame').src = 'about:blank'; // GELÖSCHT
+            
+            // Wechsle unauffällig zum Dashboard
             switchView('dashboard');
         }
 
@@ -446,23 +454,24 @@
 
         function toggleQuickView() {
             const screen = document.getElementById('quick-view-screen');
-            isQuickViewActive = !isQuickViewActive;
             
+            // Wenn die Ansicht aktiv ist und wir nochmal drücken, geht sie aus
             if (isQuickViewActive) {
-                if(!document.getElementById('quick-view-img').src) {
+                screen.style.display = 'none';
+                isQuickViewActive = false;
+            } else {
+                // Einschalten der Ansicht
+                if(!document.getElementById('quick-view-img').src || document.getElementById('quick-view-img').src === window.location.href) {
                     alert("Bitte erst ein Präsentations-Dokument in den Einstellungen hochladen!");
-                    isQuickViewActive = false;
                     return;
                 }
                 
                 // 1. Dokument im Vollbild einblenden
                 screen.style.display = 'block';
+                isQuickViewActive = true;
                 
-                // 2. Modul sofort stummschalten und sperren
+                // 2. Modul unauffällig verstecken (Spielstand bleibt erhalten!)
                 lockModule();
-            } else {
-                // Dokument wieder ausblenden
-                screen.style.display = 'none';
             }
         }
 
