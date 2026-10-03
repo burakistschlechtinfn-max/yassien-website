@@ -1,578 +1,651 @@
 <!DOCTYPE html>
-<html lang="de" class="h-full bg-slate-100">
+<html lang="de">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>StudyHub - Digitales Lernen</title>
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Phosphor Icons CDN -->
-    <script src="https://unpkg.com/@phosphor-icons/web"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        primary: '#2563eb',
-                        'primary-dark': '#1d4ed8',
-                        sidebar: '#0f172a',
-                        'sidebar-hover': '#1e293b',
-                    }
-                }
-            }
-        }
-    </script>
+    <title>StudyHub - Digitales Lernzentrum</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-        body { font-family: 'Inter', sans-serif; }
-        
-        /* Custom scrollbar for clean UI */
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: #f1f5f9; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-
-        /* 3D Flip Card Effect for Flashcards */
-        .perspective-1000 { perspective: 1000px; }
-        .transform-style-3d { transform-style: preserve-3d; }
-        .backface-hidden { backface-visibility: hidden; }
-        .rotate-y-180 { transform: rotateY(180deg); }
-        
-        /* Pulse effect for hot corner indicator in settings */
-        @keyframes pulse-ring {
-            0% { transform: scale(0.95); opacity: 0.8; }
-            50% { transform: scale(1.05); opacity: 0.4; }
-            100% { transform: scale(0.95); opacity: 0.8; }
+        /* =========================================
+           DESIGN & FARBEN (MODERN UI)
+           ========================================= */
+        :root {
+            --primary: #4f46e5;
+            --primary-hover: #4338ca;
+            --secondary: #10b981;
+            --bg-body: #f3f4f6;
+            --bg-sidebar: #111827;
+            --bg-card: #ffffff;
+            --text-main: #1f2937;
+            --text-muted: #6b7280;
+            --text-light: #f9fafb;
+            --danger: #ef4444;
+            --border-color: #e5e7eb;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --radius-md: 12px;
+            --radius-lg: 16px;
         }
-        .pulse-trigger { animation: pulse-ring 2s infinite ease-in-out; }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            height: 100vh;
+            display: flex;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* =========================================
+           LAYOUT & SIDEBAR
+           ========================================= */
+        .sidebar {
+            width: 260px;
+            background-color: var(--bg-sidebar);
+            color: var(--text-light);
+            display: flex;
+            flex-direction: column;
+            box-shadow: var(--shadow-lg);
+            z-index: 50;
+            transition: all 0.3s ease;
+        }
+
+        .logo {
+            padding: 24px 20px;
+            font-size: 22px;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: var(--text-light);
+        }
+
+        .logo span {
+            color: var(--primary);
+        }
+
+        .nav-links {
+            list-style: none;
+            flex-grow: 1;
+            padding: 20px 0;
+            overflow-y: auto;
+        }
+
+        .nav-links li {
+            padding: 14px 24px;
+            color: #9ca3af;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 4px 12px;
+            border-radius: 8px;
+        }
+
+        .nav-links li:hover {
+            background-color: rgba(255,255,255,0.05);
+            color: var(--text-light);
+        }
+
+        .nav-links li.active {
+            background-color: var(--primary);
+            color: white;
+            box-shadow: var(--shadow-md);
+        }
+
+        /* Das geheime BitLife Modul */
+        #nav-game {
+            display: none; /* Standardmäßig komplett unsichtbar */
+            background-color: rgba(239, 68, 68, 0.1);
+            color: #fca5a5;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            margin-top: 20px;
+        }
+
+        #nav-game:hover {
+            background-color: rgba(239, 68, 68, 0.2);
+            color: white;
+        }
+
+        .sidebar-footer {
+            padding: 20px;
+            font-size: 12px;
+            color: #4b5563;
+            text-align: center;
+            border-top: 1px solid rgba(255,255,255,0.05);
+        }
+
+        /* =========================================
+           MAIN CONTENT AREA
+           ========================================= */
+        .main-content {
+            flex-grow: 1;
+            padding: 40px;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .view {
+            display: none;
+            animation: fadeIn 0.4s ease-out forwards;
+        }
+
+        .view.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .header-section {
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+
+        h1 {
+            font-size: 32px;
+            font-weight: 700;
+            color: #111827;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 15px;
+            margin-top: 5px;
+        }
+
+        /* =========================================
+           CARDS & UI ELEMENTS
+           ========================================= */
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 24px;
+        }
+
+        .card {
+            background: var(--bg-card);
+            padding: 24px;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border-color);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .card h3 {
+            margin-bottom: 12px;
+            color: var(--primary);
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background-color: #e5e7eb;
+            border-radius: 4px;
+            margin: 15px 0;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background-color: var(--secondary);
+            border-radius: 4px;
+        }
+
+        .info-text {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 500;
+            transition: all 0.2s;
+            box-shadow: var(--shadow-sm);
+        }
+
+        button:hover {
+            background-color: var(--primary-hover);
+            box-shadow: var(--shadow-md);
+        }
+
+        input[type="text"], input[type="password"] {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 15px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        /* =========================================
+           TASKS & NOTES (Fakes)
+           ========================================= */
+        .task-list {
+            list-style: none;
+            margin-top: 15px;
+        }
+        .task-list li {
+            padding: 12px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .task-list li:last-child {
+            border-bottom: none;
+        }
+        .task-checkbox {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        textarea.notes-area {
+            width: 100%;
+            height: 150px;
+            padding: 15px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            resize: none;
+            font-family: inherit;
+            margin-top: 15px;
+            outline: none;
+        }
+        textarea.notes-area:focus {
+            border-color: var(--primary);
+        }
+
+        /* =========================================
+           GAME CONTAINER (BITLIFE)
+           ========================================= */
+        .game-container {
+            width: 100%;
+            height: calc(100vh - 160px);
+            border: none;
+            border-radius: var(--radius-lg);
+            background-color: #000;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* =========================================
+           SECURITY & PANIC SYSTEMS
+           ========================================= */
+        
+        /* Vollbild Dokument (Panic) */
+        #quick-view-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: #ffffff;
+            z-index: 99999;
+            display: none;
+        }
+        #quick-view-img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        /* Unsichtbarer Auslöser unten rechts */
+        #secret-bottom-right {
+            position: fixed;
+            bottom: 0;
+            right: 0;
+            width: 50px;
+            height: 50px;
+            z-index: 9999;
+            cursor: default;
+        }
+
+        /* Fokus-Stealer (Hält das iframe davon ab, Tasten zu blockieren) */
+        .focus-stealer {
+            position: fixed;
+            z-index: 9998;
+            opacity: 0;
+        }
+        #fs-top { top: 0; left: 0; width: 100%; height: 15px; }
+        #fs-left { top: 0; left: 0; width: 15px; height: 100%; }
+        #fs-right { top: 0; right: 0; width: 15px; height: 100%; }
+
+        /* Code Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(17, 24, 39, 0.7);
+            backdrop-filter: blur(8px);
+            z-index: 100000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-box {
+            background: var(--bg-card);
+            padding: 32px;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-lg);
+            text-align: center;
+            width: 340px;
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0.8); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .modal-box h3 {
+            margin-bottom: 20px;
+            color: #111827;
+        }
+
+        .modal-box input {
+            text-align: center;
+            letter-spacing: 6px;
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 12px;
+        }
+
+        .modal-buttons button {
+            flex: 1;
+        }
+
+        .btn-cancel {
+            background-color: var(--text-muted) !important;
+        }
+        .btn-cancel:hover {
+            background-color: #4b5563 !important;
+        }
     </style>
 </head>
-<body class="h-full flex overflow-hidden select-none bg-slate-100 text-slate-800">
+<body>
 
-    <!-- TOP EMERGENCY BAR (3px subtle strip at top of viewport for instant emergency trigger) -->
-    <div id="emergency-top-bar" 
-         class="fixed top-0 left-0 w-full h-[4px] bg-red-500/20 hover:bg-red-500 z-[99998] cursor-pointer transition-colors duration-150"
-         title="Notfall-Schnellansicht aktivieren (Klick / Hover)"
-         onclick="triggerPanicView('Emergency Bar Klick')">
+    <!-- FOKUS-STEALER (Damit der Panic-Button auch im Spiel funktioniert) -->
+    <!-- Wenn die Maus an den Rand geht, holt die Hauptseite den Tastatur-Fokus zurück -->
+    <div id="fs-top" class="focus-stealer"></div>
+    <div id="fs-left" class="focus-stealer"></div>
+    <div id="fs-right" class="focus-stealer"></div>
+
+    <!-- VOLLBILD DOKUMENTENANSICHT (PANIC SCREEN) -->
+    <div id="quick-view-screen">
+        <img id="quick-view-img" src="" alt="Lernmaterial">
     </div>
 
-    <!-- HOT CORNER TRIGGER ZONE (Top-Left 20x20px) -->
-    <div id="hot-corner-zone" 
-         class="fixed top-0 left-0 w-6 h-6 z-[99998] cursor-crosshair group"
-         title="Hot-Corner: Maus hierher bewegen für Sofortansicht">
-        <div class="w-full h-full bg-red-500/0 group-hover:bg-red-500/30 rounded-br transition-all"></div>
-    </div>
+    <!-- UNSICHTBARES FELD UNTEN RECHTS FÜR CODE -->
+    <div id="secret-bottom-right" onclick="openCodeModal()"></div>
 
-    <!-- FULLSCREEN PANIC / QUICK VIEW OVERLAY -->
-    <div id="quick-view-screen" class="fixed inset-0 bg-white z-[99999] hidden flex-col justify-center items-center overflow-hidden select-none">
-        <!-- Presentational Image View -->
-        <img id="quick-view-img" src="" alt="Lernnotizen Präsentation" class="w-full h-full object-contain hidden">
-        
-        <!-- Default Academic Presentation Canvas (used when no custom image uploaded) -->
-        <div id="quick-view-default" class="w-full h-full bg-slate-50 p-8 flex flex-col justify-between max-w-7xl mx-auto shadow-2xl my-auto rounded-lg border border-slate-200 my-4">
-            <div class="border-b border-slate-200 pb-4 flex justify-between items-center">
-                <div class="flex items-center gap-3">
-                    <span class="p-2 bg-blue-100 text-blue-700 rounded-lg"><i class="ph-bold ph-student text-2xl"></i></span>
-                    <div>
-                        <h2 class="text-xl font-bold text-slate-900">Studienmodul Analysis & Differentialrechnung</h2>
-                        <p class="text-xs text-slate-500">Vorlesungsskript II • Kapitel 4: Kurvendiskussion & Extremwerte</p>
-                    </div>
-                </div>
-                <div class="text-right text-xs text-slate-400 font-mono">
-                    <span class="inline-block w-2 h-2 rounded-full bg-emerald-500 mr-1"></span> LIVE SYNCHRONISIERT
-                </div>
+    <!-- CODE MODAL -->
+    <div id="code-modal" class="modal-overlay">
+        <div class="modal-box">
+            <h3>System-Zugang</h3>
+            <input type="password" id="code-input" placeholder="••••" maxlength="10">
+            <div class="modal-buttons">
+                <button onclick="submitCode()">Bestätigen</button>
+                <button class="btn-cancel" onclick="closeCodeModal()">Abbrechen</button>
             </div>
-
-            <div class="grid grid-cols-3 gap-6 my-auto py-6">
-                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
-                    <h3 class="font-bold text-blue-600 mb-2 text-sm uppercase tracking-wider">1. Ableitungsregeln</h3>
-                    <p class="text-xs text-slate-600 leading-relaxed font-mono bg-slate-50 p-3 rounded border">
-                        f(x) = xⁿ &rArr; f'(x) = n · xⁿ⁻¹<br><br>
-                        f(x) = eˣ &rArr; f'(x) = eˣ<br><br>
-                        f(x) = ln(x) &rArr; f'(x) = 1/x
-                    </p>
-                    <p class="text-[11px] text-slate-400 mt-3">Grundlage zur Bestimmung der Steigung in Kurvenpunkten.</p>
-                </div>
-                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
-                    <h3 class="font-bold text-blue-600 mb-2 text-sm uppercase tracking-wider">2. Extremwertbestimmung</h3>
-                    <ul class="text-xs text-slate-600 space-y-2 list-disc pl-4">
-                        <li><strong>Notwendige Bedingung:</strong> f'(x₀) = 0</li>
-                        <li><strong>Hinreichende Bedingung:</strong> f''(x₀) &ne; 0</li>
-                        <li>f''(x₀) &lt; 0 &rArr; Hochpunkt (Lokales Maximum)</li>
-                        <li>f''(x₀) &gt; 0 &rArr; Tiefpunkt (Lokales Minimum)</li>
-                    </ul>
-                </div>
-                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
-                    <h3 class="font-bold text-blue-600 mb-2 text-sm uppercase tracking-wider">3. Wendepunkte</h3>
-                    <p class="text-xs text-slate-600 leading-relaxed mb-3">
-                        Ein Wendepunkt beschreibt die Änderung des Krümmungsverhaltens des Funktionsgraphen.
-                    </p>
-                    <div class="bg-blue-50 text-blue-800 text-xs p-3 rounded font-mono border border-blue-200">
-                        f''(x_w) = 0 &amp; f'''(x_w) &ne; 0
-                    </div>
-                </div>
-            </div>
-
-            <div class="border-t border-slate-200 pt-4 flex justify-between items-center text-xs text-slate-500">
-                <span>Drücke <kbd class="px-2 py-1 bg-slate-200 text-slate-700 rounded font-mono border shadow-sm font-semibold text-[11px]" id="panic-exit-key-hint">Escape</kbd> erneut, um zur Ansicht zurückzukehren.</span>
-                <span>StudyHub Academic Reader v1.4</span>
-            </div>
-        </div>
-
-        <!-- Exit Panic Overlay Hint -->
-        <button onclick="toggleQuickView()" class="absolute bottom-4 right-4 bg-slate-900/80 hover:bg-slate-900 text-white text-xs px-3 py-2 rounded-lg shadow-lg backdrop-blur flex items-center gap-2 opacity-30 hover:opacity-100 transition-opacity">
-            <i class="ph-bold ph-x font-bold"></i> Ansicht Schließen
-        </button>
-    </div>
-
-    <!-- SECRET BOTTOM-RIGHT 40x40 TRIGGER -->
-    <div id="secret-bottom-right" 
-         class="fixed bottom-0 right-0 w-10 h-10 z-[999] cursor-default opacity-0 hover:opacity-20 bg-blue-500 rounded-tl-xl transition-opacity flex items-center justify-center text-white"
-         onclick="openCodeModal()"
-         title="Verstecktes Menü">
-        <i class="ph-bold ph-keyhole text-xs"></i>
-    </div>
-
-    <!-- CODE AUTHENTICATION MODAL -->
-    <div id="code-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[10000] hidden items-center justify-center p-4">
-        <div class="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-sm border border-slate-100 text-center transform transition-all scale-100">
-            <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                <i class="ph-bold ph-lock-key text-2xl"></i>
-            </div>
-            <h3 class="text-lg font-bold text-slate-900 mb-1">Erweiterte Freischaltung</h3>
-            <p class="text-xs text-slate-500 mb-5">Gib deinen Zugangscode ein, um Zusatzmodule zu aktivieren.</p>
-            
-            <input type="password" id="code-input" placeholder="••••" maxlength="10"
-                   class="w-full px-4 py-3 text-center text-xl tracking-[0.5em] font-mono border-2 border-slate-200 rounded-xl focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none mb-3 transition-all">
-            
-            <div id="code-error" class="hidden text-xs text-rose-500 font-medium mb-3 flex items-center justify-center gap-1">
-                <i class="ph-bold ph-warning-circle"></i> Ungültiger Sicherheitscode!
-            </div>
-
-            <div class="flex gap-2">
-                <button onclick="closeCodeModal()" class="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-medium rounded-xl transition-colors">
-                    Abbrechen
-                </button>
-                <button onclick="submitCode()" class="flex-1 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-xl transition-colors shadow-lg shadow-blue-500/20">
-                    Bestätigen
-                </button>
-            </div>
+            <p id="code-error" style="color: var(--danger); font-size: 13px; margin-top: 15px; display: none;">Zugriff verweigert.</p>
         </div>
     </div>
-
-    <!-- CUSTOM TOAST NOTIFICATION CONTAINER -->
-    <div id="toast-container" class="fixed top-5 right-5 z-[10001] flex flex-col gap-2 pointer-events-none"></div>
 
     <!-- SIDEBAR -->
-    <aside class="w-64 bg-sidebar text-slate-300 flex flex-col shrink-0 border-r border-slate-800 select-none">
-        <!-- Logo Header -->
-        <div class="p-5 border-b border-slate-800 flex items-center justify-between">
-            <div class="flex items-center gap-3">
-                <div class="w-9 h-9 bg-blue-600 rounded-xl flex items-center justify-center text-white font-bold text-lg shadow-md shadow-blue-600/30">
-                    <i class="ph-bold ph-book-open"></i>
-                </div>
+    <div class="sidebar">
+        <div class="logo">
+            📚 <span>StudyHub</span>
+        </div>
+        <ul class="nav-links">
+            <li class="nav-item active" id="nav-dashboard" onclick="switchView('dashboard')">
+                📊 Dashboard
+            </li>
+            <li class="nav-item" id="nav-tasks" onclick="switchView('tasks')">
+                ✅ Aufgaben
+            </li>
+            <li class="nav-item" id="nav-flashcards" onclick="switchView('flashcards')">
+                🗂️ Karteikarten
+            </li>
+            <li class="nav-item" id="nav-notes" onclick="switchView('notes')">
+                📝 Notizen
+            </li>
+            <li class="nav-item" id="nav-settings" onclick="switchView('settings')">
+                ⚙️ Einstellungen
+            </li>
+            <!-- Verstecktes Modul -->
+            <li class="nav-item" id="nav-game" onclick="switchView('game')">
+                🎮 BitLife
+            </li>
+        </ul>
+        <div class="sidebar-footer">
+            StudyHub Version 2.1.0<br>
+            Verschlüsselte Verbindung
+        </div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="main-content">
+        
+        <!-- DASHBOARD -->
+        <div id="dashboard" class="view active">
+            <div class="header-section">
                 <div>
-                    <h1 class="font-bold text-white text-base leading-tight">StudyHub</h1>
-                    <p class="text-[11px] text-slate-400">Lernplattform v1.5</p>
+                    <h1 id="greeting">Willkommen zurück!</h1>
+                    <p class="subtitle">Hier ist deine Lernübersicht für heute.</p>
+                </div>
+            </div>
+
+            <div class="card-grid">
+                <div class="card">
+                    <h3>📐 Mathe: Analysis</h3>
+                    <p class="info-text">Kurvendiskussion & Ableitungen</p>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 75%;"></div>
+                    </div>
+                    <p style="font-weight: bold; font-size: 14px;">75% Abgeschlossen</p>
+                </div>
+                <div class="card">
+                    <h3>🧬 Biologie: Genetik</h3>
+                    <p class="info-text">Vererbungslehre & DNA Replikation</p>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 40%; background-color: #f59e0b;"></div>
+                    </div>
+                    <p style="font-weight: bold; font-size: 14px;">40% Abgeschlossen</p>
+                </div>
+                <div class="card">
+                    <h3>🇬🇧 Englisch: Vokabeln</h3>
+                    <p class="info-text">Unit 4: Advanced Vocabulary</p>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 90%; background-color: #10b981;"></div>
+                    </div>
+                    <p style="font-weight: bold; font-size: 14px;">Prüfungsbereit</p>
                 </div>
             </div>
         </div>
 
-        <!-- Nav Links -->
-        <nav class="flex-1 p-4 space-y-1 overflow-y-auto">
-            <a id="nav-dashboard" onclick="switchView('dashboard')" 
-               class="nav-item active flex items-center gap-3 px-3.5 py-3 rounded-xl cursor-pointer text-sm font-medium transition-all text-white bg-blue-600/20 text-blue-400 border border-blue-500/30">
-                <i class="ph-bold ph-squares-four text-lg"></i>
-                <span>Übersicht</span>
-            </a>
-
-            <a id="nav-flashcards" onclick="switchView('flashcards')" 
-               class="nav-item flex items-center gap-3 px-3.5 py-3 rounded-xl cursor-pointer text-sm font-medium transition-all text-slate-400 hover:text-slate-200 hover:bg-slate-800/60">
-                <i class="ph-bold ph-cards text-lg"></i>
-                <span>Karteikarten</span>
-            </a>
-
-            <a id="nav-settings" onclick="switchView('settings')" 
-               class="nav-item flex items-center gap-3 px-3.5 py-3 rounded-xl cursor-pointer text-sm font-medium transition-all text-slate-400 hover:text-slate-200 hover:bg-slate-800/60">
-                <i class="ph-bold ph-gear text-lg"></i>
-                <span>Einstellungen</span>
-            </a>
-
-            <!-- HIDDEN GAME MODULE TAB -->
-            <a id="nav-game" onclick="switchView('game')" style="display: none;" 
-               class="nav-item flex items-center gap-3 px-3.5 py-3 rounded-xl cursor-pointer text-sm font-medium transition-all text-amber-400 bg-amber-500/10 border border-amber-500/20 hover:bg-amber-500/20">
-                <i class="ph-bold ph-game-controller text-lg"></i>
-                <span class="flex-1">BitLife</span>
-                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-            </a>
-        </nav>
-
-        <!-- Sidebar Footer Status -->
-        <div class="p-4 border-t border-slate-800 text-xs text-slate-500">
-            <div class="flex items-center justify-between mb-1">
-                <span>Panik-Status:</span>
-                <span class="text-emerald-400 font-medium flex items-center gap-1">
-                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Aktiv
-                </span>
+        <!-- AUFGABEN (Neu) -->
+        <div id="tasks" class="view">
+            <div class="header-section">
+                <div>
+                    <h1>To-Do Liste</h1>
+                    <p class="subtitle">Behalte deine Hausaufgaben im Blick.</p>
+                </div>
             </div>
-            <div class="text-[11px] text-slate-400 flex justify-between">
-                <span>Shortcut:</span>
-                <kbd class="px-1.5 py-0.5 bg-slate-800 text-slate-300 rounded font-mono border border-slate-700" id="sidebar-key-display">Escape</kbd>
+            <div class="card" style="max-width: 600px;">
+                <ul class="task-list">
+                    <li><input type="checkbox" class="task-checkbox" checked> <span style="text-decoration: line-through; color: gray;">Mathe S. 45 Nr. 1-3</span></li>
+                    <li><input type="checkbox" class="task-checkbox"> <span>Bio-Präsentation vorbereiten</span></li>
+                    <li><input type="checkbox" class="task-checkbox"> <span>Englisch Vokabeln wiederholen</span></li>
+                    <li><input type="checkbox" class="task-checkbox"> <span>Geschichte Quellenanalyse</span></li>
+                </ul>
             </div>
         </div>
-    </aside>
 
-    <!-- MAIN CONTENT CONTAINER -->
-    <main class="flex-1 flex flex-col min-w-0 bg-slate-100 overflow-hidden relative">
-
-        <!-- DASHBOARD VIEW -->
-        <section id="dashboard" class="view active h-full overflow-y-auto p-8">
-            <div class="max-w-6xl mx-auto space-y-6">
-                <!-- Welcome Banner -->
-                <div class="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-2xl p-6 text-white shadow-xl shadow-blue-600/10 flex justify-between items-center">
-                    <div>
-                        <h2 class="text-2xl font-bold mb-1">Willkommen zurück, Student! 👋</h2>
-                        <p class="text-blue-100 text-sm">Deine Lernstatistiken sind bereit. Du hast diese Woche 12 Stunden gelernt.</p>
-                    </div>
-                    <button onclick="switchView('flashcards')" class="px-4 py-2.5 bg-white text-blue-600 hover:bg-blue-50 font-semibold text-sm rounded-xl shadow transition-colors flex items-center gap-2">
-                        <i class="ph-bold ph-play-circle text-lg"></i> Jetzt Lernen
-                    </button>
-                </div>
-
-                <!-- Subject Cards Grid -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
-                    <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md transition-shadow">
-                        <div class="flex items-center justify-between mb-4">
-                            <span class="p-2.5 bg-blue-50 text-blue-600 rounded-xl"><i class="ph-bold ph-function text-xl"></i></span>
-                            <span class="text-xs font-semibold px-2.5 py-1 bg-emerald-50 text-emerald-600 rounded-full">75% Abgeschlossen</span>
-                        </div>
-                        <h3 class="font-bold text-slate-800 text-base mb-1">Mathe: Analysis</h3>
-                        <p class="text-xs text-slate-500 mb-4">Letzte Aktivität: Heute, 10:15 Uhr</p>
-                        <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
-                            <div class="bg-blue-600 h-full rounded-full" style="width: 75%"></div>
-                        </div>
-                    </div>
-
-                    <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md transition-shadow">
-                        <div class="flex items-center justify-between mb-4">
-                            <span class="p-2.5 bg-amber-50 text-amber-600 rounded-xl"><i class="ph-bold ph-translate text-xl"></i></span>
-                            <span class="text-xs font-semibold px-2.5 py-1 bg-amber-50 text-amber-600 rounded-full">40% Abgeschlossen</span>
-                        </div>
-                        <h3 class="font-bold text-slate-800 text-base mb-1">Englisch: Vokabeln</h3>
-                        <p class="text-xs text-slate-500 mb-4">Letzte Aktivität: Gestern</p>
-                        <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
-                            <div class="bg-amber-500 h-full rounded-full" style="width: 40%"></div>
-                        </div>
-                    </div>
-
-                    <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md transition-shadow">
-                        <div class="flex items-center justify-between mb-4">
-                            <span class="p-2.5 bg-purple-50 text-purple-600 rounded-xl"><i class="ph-bold ph-dna text-xl"></i></span>
-                            <span class="text-xs font-semibold px-2.5 py-1 bg-purple-50 text-purple-600 rounded-full">90% Abgeschlossen</span>
-                        </div>
-                        <h3 class="font-bold text-slate-800 text-base mb-1">Biologie: Genetik</h3>
-                        <p class="text-xs text-slate-500 mb-4">Prüfung steht bevor in 3 Tagen</p>
-                        <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
-                            <div class="bg-purple-600 h-full rounded-full" style="width: 90%"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Recent Notes / Quick Practice -->
-                <div class="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-sm">
-                    <h3 class="font-bold text-slate-800 text-lg mb-4 flex items-center gap-2">
-                        <i class="ph-bold ph-clock-counter-clockwise text-blue-600"></i> Aktuelle Lernziele
-                    </h3>
-                    <div class="space-y-3">
-                        <div class="p-3.5 bg-slate-50 rounded-xl border border-slate-100 flex items-center justify-between">
-                            <div class="flex items-center gap-3">
-                                <i class="ph-bold ph-check-circle text-emerald-500 text-xl"></i>
-                                <div>
-                                    <p class="text-sm font-semibold text-slate-800">Ableitungen von Exponentialfunktionen</p>
-                                    <p class="text-xs text-slate-500">Analysis • 15 Karteikarten</p>
-                                </div>
-                            </div>
-                            <span class="text-xs bg-emerald-100 text-emerald-700 px-2.5 py-1 rounded-lg font-medium">Gemeistert</span>
-                        </div>
-                        <div class="p-3.5 bg-slate-50 rounded-xl border border-slate-100 flex items-center justify-between">
-                            <div class="flex items-center gap-3">
-                                <i class="ph-bold ph-circle text-slate-300 text-xl"></i>
-                                <div>
-                                    <p class="text-sm font-semibold text-slate-800">Advanced Business Vocabulary - Unit 4</p>
-                                    <p class="text-xs text-slate-500">Englisch • 30 Karteikarten</p>
-                                </div>
-                            </div>
-                            <span class="text-xs bg-slate-200 text-slate-700 px-2.5 py-1 rounded-lg font-medium">Ausstehend</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- FLASHCARDS VIEW -->
-        <section id="flashcards" class="view hidden h-full overflow-y-auto p-8">
-            <div class="max-w-3xl mx-auto space-y-6">
-                <div class="flex justify-between items-center">
-                    <div>
-                        <h2 class="text-2xl font-bold text-slate-900">Aktiver Lernmodus</h2>
-                        <p class="text-xs text-slate-500">Mathe Analysis &bull; Karte 3 von 12</p>
-                    </div>
-                    <span class="px-3 py-1 bg-blue-100 text-blue-700 text-xs font-semibold rounded-full">Prüfungsvorbereitung</span>
-                </div>
-
-                <!-- Interactive 3D Card -->
-                <div class="perspective-1000 w-full h-80">
-                    <div id="flashcard-inner" 
-                         onclick="flipCard()" 
-                         class="w-full h-full transform-style-3d transition-transform duration-500 cursor-pointer relative rounded-2xl shadow-xl bg-white border border-slate-200">
-                        <!-- Card Front -->
-                        <div class="absolute inset-0 backface-hidden p-8 flex flex-col justify-between items-center text-center">
-                            <span class="text-xs font-bold text-slate-400 uppercase tracking-widest">Frage</span>
-                            <div class="my-auto">
-                                <h3 class="text-xl md:text-2xl font-bold text-slate-800">Was ist die 1. Ableitung von f(x) = x³?</h3>
-                                <p class="text-xs text-slate-400 mt-2">(Klicke auf die Karte, um die Antwort umzudrehen)</p>
-                            </div>
-                            <i class="ph-bold ph-arrows-counter-clockwise text-slate-300 text-xl"></i>
-                        </div>
-                        <!-- Card Back -->
-                        <div class="absolute inset-0 backface-hidden rotate-y-180 p-8 flex flex-col justify-between items-center text-center bg-blue-50/50 rounded-2xl border-2 border-blue-200">
-                            <span class="text-xs font-bold text-blue-600 uppercase tracking-widest">Lösung</span>
-                            <div class="my-auto">
-                                <h3 class="text-3xl font-extrabold text-blue-600 font-mono">f'(x) = 3x²</h3>
-                                <p class="text-xs text-slate-600 mt-2">Potenzregel angewendet: Exponent als Faktor voranstellen, Exponent um 1 verringern.</p>
-                            </div>
-                            <span class="text-xs text-blue-500 font-medium">Gut gewusst?</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Controls -->
-                <div class="flex gap-4 justify-center">
-                    <button onclick="nextCard()" class="px-6 py-3 bg-rose-100 hover:bg-rose-200 text-rose-700 font-semibold text-sm rounded-xl transition-colors flex items-center gap-2">
-                        <i class="ph-bold ph-x-circle text-lg"></i> Noch nicht gewusst
-                    </button>
-                    <button onclick="nextCard()" class="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-sm rounded-xl shadow-lg shadow-emerald-600/20 transition-colors flex items-center gap-2">
-                        <i class="ph-bold ph-check-circle text-lg"></i> Gewusst
-                    </button>
-                </div>
-            </div>
-        </section>
-
-        <!-- SETTINGS VIEW -->
-        <section id="settings" class="view hidden h-full overflow-y-auto p-8">
-            <div class="max-w-4xl mx-auto space-y-6">
+        <!-- KARTEIKARTEN -->
+        <div id="flashcards" class="view">
+            <div class="header-section">
                 <div>
-                    <h2 class="text-2xl font-bold text-slate-900">Einstellungen & Sicherheits-Optionen</h2>
-                    <p class="text-xs text-slate-500">Passe deine Schnellansicht, Shortcuts und Notfall-Trigger an.</p>
+                    <h1>Aktiver Lernmodus</h1>
+                    <p class="subtitle">Wiederhole deine Karteikarten nach dem Spaced-Repetition-System.</p>
                 </div>
+            </div>
+            <div class="card" style="min-height: 350px; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;">
+                <h2 style="color: var(--text-muted); font-weight: 500; margin-bottom: 20px; font-size: 16px;">Biologie - Karte 14/50</h2>
+                <h3 style="font-size: 28px; margin-bottom: 40px; color: #111827; max-width: 80%;">Was ist die Hauptfunktion der Mitochondrien in der Zelle?</h3>
+                <button>Antwort anzeigen</button>
+            </div>
+        </div>
 
-                <!-- Settings Group 1: Shortcut Keybinding -->
-                <div class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
-                    <div class="flex items-start justify-between">
-                        <div>
-                            <h3 class="font-bold text-slate-800 text-base flex items-center gap-2">
-                                <i class="ph-bold ph-keyboard text-blue-600"></i> Schnellansicht-Shortcut (Panic Button)
-                            </h3>
-                            <p class="text-xs text-slate-500 mt-1">Lege eine beliebige Taste fest, um deine Präsentation im Vollbild einzublenden.</p>
-                        </div>
-                        <span class="px-2.5 py-1 bg-emerald-100 text-emerald-700 text-xs font-semibold rounded-lg">Aktiv</span>
-                    </div>
+        <!-- NOTIZEN (Neu) -->
+        <div id="notes" class="view">
+            <div class="header-section">
+                <div>
+                    <h1>Schnellnotizen</h1>
+                    <p class="subtitle">Halte wichtige Gedanken fest. Speichert automatisch.</p>
+                </div>
+            </div>
+            <div class="card">
+                <textarea class="notes-area" placeholder="Tippe hier deine Notizen ein..."></textarea>
+                <p class="info-text" style="margin-top: 10px; text-align: right;">✓ Gespeichert</p>
+            </div>
+        </div>
 
-                    <div class="flex items-center gap-4 pt-2">
-                        <button id="bind-key-btn" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm rounded-xl shadow-sm transition-colors flex items-center gap-2">
-                            <i class="ph-bold ph-key"></i> Neue Taste festlegen
-                        </button>
-                        <div class="text-sm text-slate-600">
-                            Aktuelle Taste: <kbd id="current-key-display" class="px-2.5 py-1 bg-slate-100 text-blue-700 font-bold rounded-lg border border-slate-300 font-mono text-xs">Escape</kbd>
-                        </div>
-                    </div>
+        <!-- EINSTELLUNGEN -->
+        <div id="settings" class="view">
+            <div class="header-section">
+                <div>
+                    <h1>Einstellungen</h1>
+                    <p class="subtitle">Passe StudyHub an deine Bedürfnisse an.</p>
+                </div>
+            </div>
+            
+            <div class="card" style="margin-bottom: 24px;">
+                <h3>🛡️ Panic-Button (Schnellansicht)</h3>
+                <p class="info-text" style="margin-bottom: 15px;">Lege eine Taste fest, um sofort deine Dokumente im Vollbild zu öffnen und ablenkende Tabs zu verstecken.</p>
+                <button id="bind-key-btn" style="background-color: var(--text-main);">Taste festlegen (Aktuell: <span id="current-key-display">Escape</span>)</button>
+                <p id="binding-status" style="color: var(--secondary); font-weight: bold; margin-top: 10px; display: none;">Drücke jetzt eine Taste auf deiner Tastatur...</p>
+            </div>
 
-                    <p id="binding-status" class="hidden text-xs text-amber-600 font-medium animate-pulse flex items-center gap-1">
-                        <i class="ph-bold ph-spinner animate-spin"></i> Drücke jetzt eine beliebige Taste auf deiner Tastatur...
+            <div class="card">
+                <h3>📄 Notfalldokument hochladen</h3>
+                <p class="info-text" style="margin-bottom: 15px;">Lade ein Bild (z.B. Stundenplan oder Skript) hoch. Dieses wird beim Drücken des Panic-Buttons bildschirmfüllend angezeigt.</p>
+                <input type="file" id="image-upload" accept="image/png, image/jpeg, image/webp" style="display: block; margin-bottom: 10px;">
+                <p id="upload-status" style="font-weight: 500; font-size: 14px;"></p>
+            </div>
+        </div>
+
+        <!-- SPIEL-BEREICH (BitLife) -->
+        <div id="game" class="view">
+            <div class="header-section" style="margin-bottom: 15px;">
+                <div>
+                    <h1>Zusatzmodul: Simulation</h1>
+                    <p class="info-text" style="color: var(--danger); font-weight: 500;">
+                        ⚠️ Panic-Button: Drücke [ <span class="panic-key-text">Escape</span> ], um das Spiel sofort verschwinden zu lassen. Der Spielstand bleibt gespeichert!
                     </p>
                 </div>
-
-                <!-- Settings Group 2: Emergency Triggers Config -->
-                <div class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
-                    <h3 class="font-bold text-slate-800 text-base flex items-center gap-2">
-                        <i class="ph-bold ph-shield-warning text-amber-500"></i> Notfall-Sensoren & Hot-Corner
-                    </h3>
-                    <p class="text-xs text-slate-500">Diese Auslöser funktionieren auch dann, wenn der Fokus im Spiel-Iframe liegt.</p>
-
-                    <div class="space-y-3 pt-2">
-                        <div class="flex items-center justify-between p-3.5 bg-slate-50 rounded-xl border border-slate-100">
-                            <div class="flex items-center gap-3">
-                                <div class="w-8 h-8 bg-red-100 text-red-600 rounded-lg flex items-center justify-center font-bold text-sm">
-                                    <i class="ph-bold ph-arrows-out-line-horizontal"></i>
-                                </div>
-                                <div>
-                                    <p class="text-sm font-semibold text-slate-800">Oberer Notfall-Rand (3px Bar)</p>
-                                    <p class="text-xs text-slate-500">Ein Klick an den obersten Bildschirmrand schaltet sofort um.</p>
-                                </div>
-                            </div>
-                            <span class="text-xs text-emerald-600 font-bold">Aktiviert</span>
-                        </div>
-
-                        <div class="flex items-center justify-between p-3.5 bg-slate-50 rounded-xl border border-slate-100">
-                            <div class="flex items-center gap-3">
-                                <div class="w-8 h-8 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center font-bold text-sm">
-                                    <i class="ph-bold ph-arrow-up-left"></i>
-                                </div>
-                                <div>
-                                    <p class="text-sm font-semibold text-slate-800">Hot Corner (Oben-Links)</p>
-                                    <p class="text-xs text-slate-500">Maus in die obere linke Ecke bewegen schaltet Panikmodus ein.</p>
-                                </div>
-                            </div>
-                            <span class="text-xs text-emerald-600 font-bold">Aktiviert</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Settings Group 3: Document Upload -->
-                <div class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
-                    <h3 class="font-bold text-slate-800 text-base flex items-center gap-2">
-                        <i class="ph-bold ph-file-arrow-up text-blue-600"></i> Präsentations-Dokument hochladen
-                    </h3>
-                    <p class="text-xs text-slate-500">Lade einen Screenshot deiner eigenen Unterlagen oder ein Lernskript als Tarnung hoch.</p>
-
-                    <div class="flex flex-col sm:flex-row items-center gap-4 pt-2">
-                        <label class="w-full sm:w-auto px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-sm rounded-xl cursor-pointer transition-colors border border-slate-300 text-center flex items-center justify-center gap-2">
-                            <i class="ph-bold ph-upload-simple"></i> Bild auswählen (PNG / JPG)
-                            <input type="file" id="image-upload" accept="image/png, image/jpeg, image/webp" class="hidden">
-                        </label>
-                        <button onclick="resetToDefaultDoc()" class="w-full sm:w-auto px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-600 text-sm font-medium rounded-xl transition-colors">
-                            Standard-Skript verwenden
-                        </button>
-                    </div>
-
-                    <p id="upload-status" class="text-xs font-medium"></p>
-
-                    <!-- Preview area -->
-                    <div id="upload-preview-box" class="hidden p-3 bg-slate-50 rounded-xl border border-slate-200 flex items-center gap-3">
-                        <img id="upload-preview-img" src="" class="w-16 h-12 object-cover rounded border">
-                        <div class="text-xs">
-                            <p class="font-semibold text-slate-800">Eigenes Dokument aktiv</p>
-                            <p class="text-slate-500">Wird beim Aktivieren des Panikmodus angezeigt.</p>
-                        </div>
-                    </div>
-                </div>
             </div>
-        </section>
+            <iframe id="bitlife-frame" class="game-container" src="about:blank" allowfullscreen></iframe>
+        </div>
 
-        <!-- GAME MODULE VIEW (BitLife) -->
-        <section id="game" class="view hidden h-full flex flex-col p-4 bg-slate-900">
-            <!-- Game Top Alert Bar -->
-            <div class="bg-slate-800 text-slate-300 px-4 py-2.5 rounded-xl mb-3 flex items-center justify-between text-xs border border-slate-700">
-                <div class="flex items-center gap-2">
-                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                    <span class="font-semibold text-white">Zusatzmodul: BitLife</span>
-                    <span class="text-slate-400 hidden sm:inline">&bull; Status bleibt beim Ausblenden erhalten</span>
-                </div>
-                <div class="flex items-center gap-3 font-mono text-[11px]">
-                    <span class="bg-slate-900 px-2 py-1 rounded text-amber-400 border border-slate-700">
-                        Panic-Taste: <strong id="game-key-hint">Escape</strong>
-                    </span>
-                    <span class="hidden md:inline text-slate-400">Hot-Corner: Oben-Links</span>
-                </div>
-            </div>
-
-            <!-- Game Frame Container -->
-            <div class="flex-1 relative w-full h-full rounded-xl overflow-hidden border border-slate-800 bg-black">
-                <iframe id="bitlife-frame" 
-                        class="w-full h-full border-none" 
-                        src="about:blank" 
-                        allow="autoplay; keyboard" 
-                        allowfullscreen>
-                </iframe>
-            </div>
-        </section>
-
-    </main>
+    </div>
 
     <script>
-        // --- 1. Global Variables & LocalStorage ---
+        // ==========================================
+        // 1. SYSTEM-VARIABLEN & INITIALISIERUNG
+        // ==========================================
         let shortcutKey = localStorage.getItem('studyHub_shortcutKey') || 'Escape';
-        let shortcutCode = localStorage.getItem('studyHub_shortcutCode') || 'Escape';
         let docImage = localStorage.getItem('studyHub_docImage') || '';
         let isBindingKey = false;
         let isQuickViewActive = false;
-        let isModuleUnlocked = localStorage.getItem('studyHub_unlocked') === 'true';
+        let isUnlocked = false; // Speichert, ob BitLife sichtbar ist
 
         const GAME_URL = "https://sz-games.github.io/Games9/bitlife";
 
-        // Initial UI Configuration
-        updateKeyDisplay();
+        // Begrüßung basierend auf Tageszeit
+        const hour = new Date().getHours();
+        let greetingText = "Guten Morgen!";
+        if(hour >= 12) greetingText = "Guten Tag!";
+        if(hour >= 18) greetingText = "Guten Abend!";
+        document.getElementById('greeting').innerText = greetingText;
+
+        // UI Startwerte setzen
+        document.getElementById('current-key-display').innerText = shortcutKey === ' ' ? 'Leertaste' : shortcutKey;
+        document.querySelectorAll('.panic-key-text').forEach(el => el.innerText = shortcutKey === ' ' ? 'Leertaste' : shortcutKey);
         
-        if (docImage) {
-            applyCustomDocImage(docImage);
+        if(docImage) {
+            document.getElementById('quick-view-img').src = docImage;
         }
 
-        if (isModuleUnlocked) {
-            unlockModule(false);
-        }
-
-        // --- 2. Navigation Logic ---
+        // ==========================================
+        // 2. NAVIGATION (VIEWS WECHSELN)
+        // ==========================================
         function switchView(viewId) {
-            // Hide all views
-            document.querySelectorAll('.view').forEach(el => el.classList.add('hidden'));
-            document.querySelectorAll('.nav-item').forEach(el => {
-                el.classList.remove('active', 'bg-blue-600/20', 'text-blue-400', 'border', 'border-blue-500/30', 'text-white');
-                el.classList.add('text-slate-400');
-            });
-
-            // Show selected view
-            const activeView = document.getElementById(viewId);
-            if (activeView) {
-                activeView.classList.remove('hidden');
-                activeView.classList.add('active');
-            }
-
-            // Highlight nav tab
+            // Alle Views und Nav-Items zurücksetzen
+            document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            
+            // Neues View aktivieren
+            document.getElementById(viewId).classList.add('active');
             const activeNav = document.getElementById('nav-' + viewId);
-            if (activeNav && viewId !== 'game') {
-                activeNav.classList.add('active', 'bg-blue-600/20', 'text-blue-400', 'border', 'border-blue-500/30', 'text-white');
-                activeNav.classList.remove('text-slate-400');
-            } else if (activeNav && viewId === 'game') {
-                activeNav.classList.add('active');
-            }
+            if(activeNav) activeNav.classList.add('active');
         }
 
-        // --- Custom Toast Message replacing alert() ---
-        function showToast(message, type = 'info') {
-            const container = document.getElementById('toast-container');
-            const toast = document.createElement('div');
-            
-            let bgClass = 'bg-slate-900 text-white border-slate-700';
-            if (type === 'success') bgClass = 'bg-emerald-600 text-white border-emerald-500';
-            if (type === 'error') bgClass = 'bg-rose-600 text-white border-rose-500';
-
-            toast.className = `px-4 py-3 rounded-xl shadow-2xl border text-xs font-medium pointer-events-auto flex items-center gap-2 transform transition-all duration-300 translate-y-2 opacity-0 ${bgClass}`;
-            toast.innerHTML = `<i class="ph-bold ph-info text-base"></i> <span>${message}</span>`;
-            
-            container.appendChild(toast);
-
-            setTimeout(() => {
-                toast.classList.remove('translate-y-2', 'opacity-0');
-            }, 10);
-
-            setTimeout(() => {
-                toast.classList.add('opacity-0', 'translate-y-2');
-                setTimeout(() => toast.remove(), 300);
-            }, 3000);
-        }
-
-        // --- 3. Code Modal & Unlock Mechanism ---
+        // ==========================================
+        // 3. GEHEIMES MODUL (CODE & FREISCHALTUNG)
+        // ==========================================
         function openCodeModal() {
-            document.getElementById('code-modal').classList.remove('hidden');
-            document.getElementById('code-modal').classList.add('flex');
+            document.getElementById('code-modal').style.display = 'flex';
             document.getElementById('code-input').value = '';
-            document.getElementById('code-error').classList.add('hidden');
-            document.getElementById('code-input').focus();
+            document.getElementById('code-error').style.display = 'none';
+            setTimeout(() => document.getElementById('code-input').focus(), 100);
         }
 
         function closeCodeModal() {
-            document.getElementById('code-modal').classList.add('hidden');
-            document.getElementById('code-modal').classList.remove('flex');
+            document.getElementById('code-modal').style.display = 'none';
         }
 
         document.getElementById('code-input').addEventListener('keypress', function(e) {
@@ -580,142 +653,111 @@
         });
 
         function submitCode() {
-            const enteredCode = document.getElementById('code-input').value.trim();
+            const enteredCode = document.getElementById('code-input').value;
             if (enteredCode === '5555') {
                 closeCodeModal();
-                unlockModule(true);
+                unlockGame();
             } else {
-                document.getElementById('code-error').classList.remove('hidden');
+                document.getElementById('code-error').style.display = 'block';
             }
         }
 
-        function unlockModule(showNotice = true) {
-            localStorage.setItem('studyHub_unlocked', 'true');
+        function unlockGame() {
+            isUnlocked = true;
             const gameNav = document.getElementById('nav-game');
-            gameNav.style.display = 'flex';
+            gameNav.style.display = 'flex'; // Sichtbar machen in der Sidebar
             
             const frame = document.getElementById('bitlife-frame');
-            if (frame.src === 'about:blank' || !frame.src) {
+            // WICHTIG: Spiel nur laden, wenn es noch nicht geladen ist!
+            // Das sorgt dafür, dass der Spielstand erhalten bleibt, wenn man den Panic Button nutzt.
+            if (frame.src === 'about:blank' || frame.src === window.location.href) {
                 frame.src = GAME_URL;
             }
             
             switchView('game');
-            if (showNotice) showToast('Zusatzmodul (BitLife) freigeschaltet!', 'success');
         }
 
-        // --- 4. PANIC BUTTON & IFRAME FOCUS BUG FIXES ---
-
-        // Function to Trigger Panic Mode
-        function triggerPanicView(reason = 'Shortcut') {
-            if (isQuickViewActive) return; // Already active
-
-            isQuickViewActive = true;
-            const screen = document.getElementById('quick-view-screen');
-            screen.classList.remove('hidden');
-            screen.classList.add('flex');
-
-            // Hide the game navigation tab completely from the sidebar
+        // ==========================================
+        // 4. PANIC BUTTON LOGIK (STRIKTES VERSTECKEN)
+        // ==========================================
+        function activatePanicMode() {
+            // 1. BitLife komplett aus der Sidebar entfernen
+            isUnlocked = false;
             document.getElementById('nav-game').style.display = 'none';
-
-            // Switch view internally to dashboard (so if overlay is closed, user lands on Dashboard)
+            
+            // 2. Ansicht sofort auf Dashboard wechseln (versteckt das iframe im Hintergrund)
             switchView('dashboard');
-
-            // CRITICAL FIX: DO NOT reset bitlife-frame.src!
-            // We leave the iframe loaded in background so game progress is 100% saved!
+            
+            // 3. (Optional) Notfall-Bildschirm über alles legen, falls konfiguriert
+            if(docImage) {
+                document.getElementById('quick-view-screen').style.display = 'block';
+                isQuickViewActive = true;
+            }
         }
 
-        function exitPanicView() {
-            if (!isQuickViewActive) return;
-
+        function deactivatePanicMode() {
+            // Nimmt nur den Vollbild-Screen weg. Das Spiel bleibt versteckt,
+            // bis der Code erneut eingegeben wird.
+            document.getElementById('quick-view-screen').style.display = 'none';
             isQuickViewActive = false;
-            const screen = document.getElementById('quick-view-screen');
-            screen.classList.add('hidden');
-            screen.classList.remove('flex');
-
-            // Restore secret module tab if previously unlocked
-            if (localStorage.getItem('studyHub_unlocked') === 'true') {
-                document.getElementById('nav-game').style.display = 'flex';
-            }
         }
 
-        function toggleQuickView() {
-            if (isQuickViewActive) {
-                exitPanicView();
-            } else {
-                triggerPanicView('Toggle');
-            }
-        }
-
-        // HOT CORNER SENSOR (Detect mouse in top-left 20x20px)
-        document.addEventListener('mousemove', (e) => {
-            // Hot Corner Trigger
-            if (e.clientX <= 20 && e.clientY <= 20) {
-                if (!isQuickViewActive) {
-                    triggerPanicView('Hot Corner');
-                }
-            }
-
-            // Focus Recovery: regain window focus whenever cursor moves over main layout
-            if (document.activeElement && document.activeElement.tagName === 'IFRAME') {
+        // ==========================================
+        // 5. TASTATUR-STEUERUNG & FOKUS-FIX
+        // ==========================================
+        
+        // FOKUS FIX: Wenn die Maus den Rand berührt, holt das Fenster den Fokus vom Iframe zurück.
+        // Das garantiert, dass der Panic Button immer funktioniert!
+        const stealers = document.querySelectorAll('.focus-stealer');
+        stealers.forEach(stealer => {
+            stealer.addEventListener('mouseenter', () => {
                 window.focus();
-            }
+            });
         });
 
-        // ENHANCED KEYBOARD LISTENER (Catches both e.key and e.code)
         document.addEventListener('keydown', (e) => {
-            // Key binding mode in Settings
+            // Modus: Neue Taste festlegen
             if (isBindingKey) {
                 e.preventDefault();
-                shortcutKey = e.key === ' ' ? 'Space' : e.key;
-                shortcutCode = e.code;
-
+                shortcutKey = e.key;
                 localStorage.setItem('studyHub_shortcutKey', shortcutKey);
-                localStorage.setItem('studyHub_shortcutCode', shortcutCode);
-
-                updateKeyDisplay();
-                document.getElementById('binding-status').classList.add('hidden');
+                
+                const keyName = shortcutKey === ' ' ? 'Leertaste' : shortcutKey;
+                document.getElementById('current-key-display').innerText = keyName;
+                document.querySelectorAll('.panic-key-text').forEach(el => el.innerText = keyName);
+                
+                document.getElementById('binding-status').style.display = 'none';
                 isBindingKey = false;
-                showToast(`Neuer Panic-Shortcut: ${shortcutKey}`, 'success');
                 return;
             }
 
-            // Check if key matches Panic Shortcut
-            const keyMatch = e.key.toLowerCase() === shortcutKey.toLowerCase() || e.key === shortcutKey;
-            const codeMatch = e.code && e.code.toLowerCase() === shortcutCode.toLowerCase();
-
-            if (keyMatch || codeMatch) {
-                e.preventDefault();
+            // Panic Button gedrückt
+            if (e.key.toLowerCase() === shortcutKey.toLowerCase() || e.key === shortcutKey) {
                 if (isQuickViewActive) {
-                    exitPanicView();
+                    deactivatePanicMode();
                 } else {
-                    triggerPanicView('Keyboard Shortcut');
+                    activatePanicMode();
                 }
             }
         });
 
-        function updateKeyDisplay() {
-            const displayVal = shortcutKey === ' ' ? 'Leertaste' : shortcutKey;
-            document.getElementById('current-key-display').innerText = displayVal;
-            document.getElementById('sidebar-key-display').innerText = displayVal;
-            document.getElementById('panic-exit-key-hint').innerText = displayVal;
-            document.getElementById('game-key-hint').innerText = displayVal;
-        }
-
         document.getElementById('bind-key-btn').addEventListener('click', () => {
             isBindingKey = true;
-            document.getElementById('binding-status').classList.remove('hidden');
+            document.getElementById('binding-status').style.display = 'block';
         });
 
-        // --- 5. Document Upload & Storage ---
+        // ==========================================
+        // 6. DOKUMENTEN-UPLOAD
+        // ==========================================
         const fileInput = document.getElementById('image-upload');
         const statusText = document.getElementById('upload-status');
 
         fileInput.addEventListener('change', (e) => {
             const file = e.target.files[0];
             if (file) {
-                if (file.size > 4 * 1024 * 1024) {
-                    statusText.innerText = "Fehler: Datei ist zu groß (maximal 4MB)!";
-                    statusText.className = "text-xs font-medium text-rose-500";
+                if(file.size > 4 * 1024 * 1024) {
+                    statusText.innerText = "❌ Datei ist zu groß (maximal 4MB)!";
+                    statusText.style.color = "var(--danger)";
                     return;
                 }
 
@@ -724,59 +766,18 @@
                     const dataUrl = event.target.result;
                     try {
                         localStorage.setItem('studyHub_docImage', dataUrl);
-                        applyCustomDocImage(dataUrl);
-                        statusText.innerText = "Dokument erfolgreich gespeichert!";
-                        statusText.className = "text-xs font-medium text-emerald-600";
-                        showToast('Präsentations-Dokument aktualisiert', 'success');
+                        docImage = dataUrl;
+                        document.getElementById('quick-view-img').src = dataUrl;
+                        statusText.innerText = "✅ Dokument erfolgreich für Panic-Screen gespeichert!";
+                        statusText.style.color = "var(--secondary)";
                     } catch (err) {
-                        statusText.innerText = "Speicherfehler (Datei eventuell zu groß).";
-                        statusText.className = "text-xs font-medium text-rose-500";
+                        statusText.innerText = "❌ Fehler beim Speichern (Speicher voll?).";
+                        statusText.style.color = "var(--danger)";
                     }
                 };
                 reader.readAsDataURL(file);
             }
         });
-
-        function applyCustomDocImage(dataUrl) {
-            const imgEl = document.getElementById('quick-view-img');
-            const defaultEl = document.getElementById('quick-view-default');
-            
-            imgEl.src = dataUrl;
-            imgEl.classList.remove('hidden');
-            defaultEl.classList.add('hidden');
-
-            document.getElementById('upload-preview-img').src = dataUrl;
-            document.getElementById('upload-preview-box').classList.remove('hidden');
-        }
-
-        function resetToDefaultDoc() {
-            localStorage.removeItem('studyHub_docImage');
-            document.getElementById('quick-view-img').classList.add('hidden');
-            document.getElementById('quick-view-default').classList.remove('hidden');
-            document.getElementById('upload-preview-box').classList.add('hidden');
-            statusText.innerText = "Standard-Vorlesungsskript aktiviert.";
-            statusText.className = "text-xs font-medium text-blue-600";
-            showToast('Standard-Skript wiederhergestellt');
-        }
-
-        // --- 6. Flashcard Interaction ---
-        let isFlipped = false;
-        function flipCard() {
-            const inner = document.getElementById('flashcard-inner');
-            isFlipped = !isFlipped;
-            if (isFlipped) {
-                inner.classList.add('rotate-y-180');
-            } else {
-                inner.classList.remove('rotate-y-180');
-            }
-        }
-
-        function nextCard() {
-            const inner = document.getElementById('flashcard-inner');
-            isFlipped = false;
-            inner.classList.remove('rotate-y-180');
-            showToast('Nächste Karte geladen');
-        }
     </script>
 </body>
 </html>
