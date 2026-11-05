@@ -1,704 +1,79 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-<meta charset="utf-8">
-<title>Tesla Roadster Sky Stunt Ultra</title>
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<style>
-:root {
-  color-scheme: dark;
-  --ink: #ffffff;
-  --glass: rgba(10, 12, 24, 0.65);
-  --red: #ff2a55;
-  --cy: #00e5ff;
-  --or: #ff9100;
-  --gn: #00ff66;
-}
-* { box-sizing: border-box; }
-html, body {
-  margin: 0; height: 100%; overflow: hidden;
-  background: #090a15; color: var(--ink);
-  font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-  touch-action: none; user-select: none;
-}
-canvas { display: block; width: 100vw; height: 100vh; }
-.h { position: fixed; pointer-events: none; z-index: 10; }
-#sc { left: 20px; top: 16px; font-size: 32px; font-weight: 800; text-shadow: 0 2px 8px rgba(0,0,0,0.8); }
-#sc small { display: block; font-size: 13px; opacity: 0.75; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
-#sp { left: 50%; bottom: 85px; transform: translateX(-50%); text-align: center; font-size: 58px; font-weight: 900; font-style: italic; text-shadow: 0 4px 12px rgba(0,0,0,0.9); }
-#sp small { font-size: 18px; font-style: normal; opacity: 0.8; margin-left: 4px; }
-#bars { left: 50%; bottom: 24px; transform: translateX(-50%); width: min(400px, 85vw); display: flex; flex-direction: column; gap: 6px; }
-.b-wrap { display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 700; text-transform: uppercase; opacity: 0.9; }
-.b { flex: 1; height: 10px; background: var(--glass); border-radius: 4px; overflow: hidden; border: 1px solid rgba(255,255,255,0.15); backdrop-filter: blur(4px); }
-.b i { display: block; height: 100%; width: 100%; transition: width 0.1s linear; }
-#bb { background: linear-gradient(90deg, #ff5500, var(--or)); }
-#fb { background: linear-gradient(90deg, #0088ff, var(--cy)); }
-#al { right: 20px; top: 16px; font-size: 24px; font-weight: 700; text-align: right; text-shadow: 0 2px 8px rgba(0,0,0,0.8); }
-#pop { left: 50%; top: 22%; transform: translateX(-50%); font-size: 42px; font-weight: 900; font-style: italic; white-space: nowrap; opacity: 0; text-shadow: 0 4px 20px #000; color: #fff; }
-#pop.s { animation: p 1.6s ease-out; }
-@keyframes p {
-  0% { opacity: 0; transform: translateX(-50%) scale(0.5); }
-  15% { opacity: 1; transform: translateX(-50%) scale(1.1); }
-  70% { opacity: 1; }
-  100% { opacity: 0; transform: translateX(-50%) translateY(-40px); }
-}
-#help { left: 20px; top: 80px; background: var(--glass); padding: 14px; font-size: 13px; line-height: 1.5; border-left: 4px solid var(--cy); max-width: 320px; border-radius: 0 8px 8px 0; backdrop-filter: blur(8px); }
-#tc { position: fixed; inset: auto 0 100px 0; display: none; justify-content: space-between; padding: 0 16px; z-index: 20; }
-#tc div { display: flex; gap: 10px; flex-wrap: wrap; max-width: 200px; }
-#tc button { width: 60px; height: 55px; border: 1px solid rgba(255,255,255,0.2); border-radius: 12px; background: var(--glass); color: #fff; font: 700 16px inherit; touch-action: none; backdrop-filter: blur(4px); }
-#tc button:active { background: rgba(255,255,255,0.3); }
-@media (pointer: coarse) { #tc { display: flex; } #help { display: none; } }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meine eigene KI</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #1e1e2f;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+        #chat-container {
+            width: 400px;
+            max-width: 90%;
+            background: #2a2a40;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+        #chat-box {
+            height: 300px;
+            overflow-y: auto;
+            border: 1px solid #444;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            background: #1f1f30;
+        }
+        .message {
+            margin-bottom: 10px;
+            padding: 8px;
+            border-radius: 5px;
+        }
+        .user { background: #3b82f6; text-align: right; }
+        .ai { background: #10b981; }
+        .input-group {
+            display: flex;
+        }
+        input {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 5px 0 0 5px;
+            outline: none;
+        }
+        button {
+            padding: 10px 15px;
+            background: #6366f1;
+            color: white;
+            border: none;
+            border-radius: 0 5px 5px 0;
+            cursor: pointer;
+        }
+        button:hover { background: #4f46e5; }
+    </style>
 </head>
 <body>
-<div class="h" id="sc"><span id="s">0</span><small>Punkte</small></div>
-<div class="h" id="al"><span id="a">0</span> m<br><small id="cm" style="font-size:13px;opacity:0.75;font-weight:400"></small></div>
-<div class="h" id="sp"><span id="k">0</span><small>km/h</small></div>
-<div class="h" id="bars">
-  <div class="b-wrap"><span>Boost</span><div class="b"><i id="bb"></i></div></div>
-  <div class="b-wrap"><span>Flug-Akku</span><div class="b"><i id="fb"></i></div></div>
-</div>
-<div class="h" id="pop"></div>
-<div class="h" id="help">
-  <b style="font-size:15px;color:var(--cy)">Tesla Roadster Flight Edition</b><br>
-  <b>W / S</b> Gas & Bremse · <b>A / D</b> Lenken<br>
-  <b>Leertaste</b> Sprung / Fliegen halten (braucht Akku)<br>
-  <b>Shift</b> Nitro Boost · <b>X</b> Handbremse & Drift<br>
-  <b>Luft-Steuerung:</b> W/S Nicken, A/D Drehen, Q/E Rolle<br>
-  <b>1–5</b> Lackierung · <b>C</b> Kamera · <b>G</b> Reset<br>
-  <span style="color:var(--gn)">Tipp: Sammle leuchtende Würfel für Energie!</span>
-</div>
 
-<div id="tc">
-  <div>
-    <button data-k="KeyA">◀</button>
-    <button data-k="KeyD">▶</button>
-    <button data-k="KeyQ">↶</button>
-    <button data-k="KeyE">↷</button>
-  </div>
-  <div style="justify-content:flex-end">
-    <button data-k="ShiftLeft">BOOST</button>
-    <button data-k="Space">FLY</button>
-    <button data-k="KeyW">▲</button>
-    <button data-k="KeyS">▼</button>
-  </div>
-</div>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script>
-const V3 = THREE.Vector3, rn = () => Math.random() - 0.5, cl = THREE.MathUtils.clamp, TAU = Math.PI * 2;
-
-// Renderer setup
-const R = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
-R.setPixelRatio(Math.min(devicePixelRatio, 2));
-R.shadowMap.enabled = true;
-R.shadowMap.type = THREE.PCFSoftShadowMap;
-R.toneMapping = THREE.ACESFilmicToneMapping;
-R.toneMappingExposure = 1.1;
-document.body.appendChild(R.domElement);
-
-const S = new THREE.Scene();
-const C = new THREE.PerspectiveCamera(65, 1, 0.1, 2500);
-
-// Sky Canvas Gradient Texture
-(() => {
-  const c = document.createElement('canvas'); c.width = 2; c.height = 512;
-  const g = c.getContext('2d'), r = g.createLinearGradient(0, 0, 0, 512);
-  r.addColorStop(0, '#060714');
-  r.addColorStop(0.4, '#121535');
-  r.addColorStop(0.75, '#6b2651');
-  r.addColorStop(1, '#ff6e4a');
-  g.fillStyle = r; g.fillRect(0, 0, 2, 512);
-  S.background = new THREE.CanvasTexture(c);
-})();
-
-S.fog = new THREE.FogExp2(0x1a1c3b, 0.0012);
-
-// Lights
-S.add(new THREE.AmbientLight(0xd0e0ff, 0.6));
-const sun = new THREE.DirectionalLight(0xffdfb3, 1.4);
-sun.castShadow = true;
-sun.shadow.mapSize.set(2048, 2048);
-Object.assign(sun.shadow.camera, { left: -70, right: 70, top: 70, bottom: -70, far: 350 });
-S.add(sun, sun.target);
-
-// Ground
-const gt = (() => {
-  const c = document.createElement('canvas'); c.width = c.height = 512;
-  const g = c.getContext('2d');
-  g.fillStyle = '#11131d'; g.fillRect(0, 0, 512, 512);
-  g.strokeStyle = 'rgba(0, 229, 255, 0.15)'; g.lineWidth = 4;
-  g.strokeRect(0, 0, 512, 512);
-  for(let i=0; i<300; i++) {
-    g.fillStyle = 'rgba(255,255,255,0.03)';
-    g.fillRect(Math.random()*512, Math.random()*512, 4, 4);
-  }
-  const t = new THREE.CanvasTexture(c);
-  t.wrapS = t.wrapT = THREE.RepeatWrapping;
-  t.repeat.set(150, 150);
-  return t;
-})();
-const gnd = new THREE.Mesh(new THREE.PlaneGeometry(6000, 6000), new THREE.MeshStandardMaterial({ map: gt, roughness: 0.85, metalness: 0.2 }));
-gnd.rotation.x = -Math.PI / 2;
-gnd.receiveShadow = true;
-S.add(gnd);
-
-// Buildings
-const B = [];
-const bMat = new THREE.MeshStandardMaterial({ color: 0x1a1d2e, roughness: 0.5, metalness: 0.5 });
-for (let i = 0; i < 90; i++) {
-  const a = Math.random() * TAU, d = 110 + Math.random() * 500;
-  const w = 14 + Math.random() * 24, dp = 14 + Math.random() * 24, h = 25 + Math.random() * 120;
-  const x = Math.cos(a) * d, z = Math.sin(a) * d - 100;
-  const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, dp), bMat);
-  m.position.set(x, h / 2, z);
-  m.castShadow = true; m.receiveShadow = true;
-  S.add(m);
-  B.push({ x, z, w, d: dp, h });
-}
-
-// Stunt Rampen & Loopings Definitionen
-const RP = [
-  [0, -10, 20, 50, 16, -1],
-  [-50, -20, 14, 32, 8, -1],
-  [50, -20, 14, 32, 8, -1],
-  [0, -220, 30, 120, 60, -1],
-  [-110, 60, 16, 35, 12, 1],
-  [110, -70, 16, 35, 12, 1]
-];
-
-RP.forEach(r => {
-  const [x, z0, w, l, h, dir] = r;
-  const s = new THREE.Shape();
-  s.moveTo(0, 0); s.lineTo(l, 0); s.lineTo(l, h); s.closePath();
-  const g = new THREE.ExtrudeGeometry(s, { depth: w, bevelEnabled: false });
-  g.translate(0, 0, -w / 2);
-  const m = new THREE.Mesh(g, new THREE.MeshStandardMaterial({ color: 0x272c3d, roughness: 0.4, metalness: 0.6 }));
-  m.rotation.y = dir === 1 ? -Math.PI / 2 : Math.PI / 2;
-  m.position.set(x, 0, z0);
-  m.castShadow = m.receiveShadow = true;
-  m.add(new THREE.LineSegments(new THREE.EdgesGeometry(g), new THREE.LineBasicMaterial({ color: 0x00e5ff })));
-  S.add(m);
-});
-
-function gY(x, z) {
-  let y = 0;
-  for (const [rx, z0, w, l, h, dir] of RP) {
-    if (Math.abs(x - rx) < w / 2) {
-      const t = (z - z0) * dir / l;
-      if (t >= 0 && t <= 1) y = Math.max(y, h * t);
-    }
-  }
-  return y;
-}
-
-// Collectibles & Rings
-const rings = [
-  [0, 28, -85], [0, 42, -135], [-50, 20, -70], [50, 20, -70],
-  [0, 75, -340], [0, 95, -420], [30, 110, -500], [-30, 110, -580]
-].map(p => {
-  const m = new THREE.Mesh(new THREE.TorusGeometry(6.5, 0.6, 12, 32), new THREE.MeshBasicMaterial({ color: 0x00e5ff }));
-  m.position.set(...p);
-  S.add(m);
-  return { m, t: 0 };
-});
-
-const energyCubes = [];
-for (let i = 0; i < 25; i++) {
-  const m = new THREE.Mesh(new THREE.BoxGeometry(3, 3, 3), new THREE.MeshBasicMaterial({ color: 0x00ff66, wireframe: true }));
-  const p = [(Math.random() - 0.5) * 600, 10 + Math.random() * 60, (Math.random() - 0.5) * 600];
-  m.position.set(...p);
-  S.add(m);
-  energyCubes.push({ m, active: true, baseY: p[1] });
-}
-
-// ==========================================
-// Tesla Roadster Detailed 3D Model Construction
-// ==========================================
-const car = new THREE.Group(), tilt = new THREE.Group();
-car.add(tilt); S.add(car);
-
-const paintC = [0xd8141c, 0x1155ee, 0xf0f0f0, 0x0d0e11, 0x7cff3a];
-const bodyM = new THREE.MeshPhysicalMaterial({ color: paintC[0], metalness: 0.7, roughness: 0.2, clearcoat: 1.0, clearcoatRoughness: 0.1 });
-const darkM = new THREE.MeshStandardMaterial({ color: 0x0a0b0e, roughness: 0.6, metalness: 0.4 });
-const glassM = new THREE.MeshPhysicalMaterial({ color: 0x111622, transparent: true, opacity: 0.6, roughness: 0.1, metalness: 0.9, clearcoat: 1.0 });
-const chromeM = new THREE.MeshStandardMaterial({ color: 0xe0e5ed, metalness: 0.95, roughness: 0.1 });
-const emiMat = (c) => new THREE.MeshBasicMaterial({ color: c });
-
-// Main Body Base Shape
-const bodyGroup = new THREE.Group();
-tilt.add(bodyGroup);
-
-// Lower Chassis
-const chassis = new THREE.Mesh(new THREE.BoxGeometry(2.1, 0.45, 4.4), darkM);
-chassis.position.set(0, 0.35, 0);
-chassis.castShadow = true;
-bodyGroup.add(chassis);
-
-// Sleek Car Body Smooth Geometry
-const carBodyGeo = new THREE.CylinderGeometry(1.05, 1.15, 4.2, 16);
-carBodyGeo.scale(1, 0.4, 1);
-carBodyGeo.rotateX(Math.PI / 2);
-const carBodyMesh = new THREE.Mesh(carBodyGeo, bodyM);
-carBodyMesh.position.set(0, 0.55, 0);
-carBodyMesh.castShadow = true;
-bodyGroup.add(carBodyMesh);
-
-// Curved Glass Canopy (Panorama Roof)
-const canopyGeo = new THREE.SphereGeometry(0.95, 16, 16, 0, TAU, 0, Math.PI / 2);
-canopyGeo.scale(0.95, 0.65, 2.0);
-const canopy = new THREE.Mesh(canopyGeo, glassM);
-canopy.position.set(0, 0.65, 0.1);
-bodyGroup.add(canopy);
-
-// Cockpit Interior Details
-const dash = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.2, 0.5), darkM);
-dash.position.set(0, 0.68, -0.4);
-bodyGroup.add(dash);
-const wheel = new THREE.Mesh(new THREE.TorusGeometry(0.12, 0.02, 8, 16), chromeM);
-wheel.position.set(-0.35, 0.78, -0.25);
-wheel.rotation.x = 0.4;
-bodyGroup.add(wheel);
-
-// Headlights (Tesla LED Strips)
-[-0.75, 0.75].forEach(x => {
-  const light = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.06, 0.4), emiMat(0xd5f3ff));
-  light.position.set(x, 0.52, -2.12);
-  light.rotation.y = x > 0 ? -0.2 : 0.2;
-  bodyGroup.add(light);
-});
-
-// Rear Continuous Taillight Strip
-const tailLight = new THREE.Mesh(new THREE.BoxGeometry(1.9, 0.08, 0.1), emiMat(0xff0033));
-tailLight.position.set(0, 0.62, 2.15);
-bodyGroup.add(tailLight);
-
-// Active Aero Rear Wing
-const rearWingGroup = new THREE.Group();
-rearWingGroup.position.set(0, 0.75, 1.95);
-bodyGroup.add(rearWingGroup);
-const wingBlade = new THREE.Mesh(new THREE.BoxGeometry(1.85, 0.04, 0.35), bodyM);
-rearWingGroup.add(wingBlade);
-[-0.6, 0.6].forEach(x => {
-  const strut = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.18, 0.08), darkM);
-  strut.position.set(x, -0.08, 0);
-  rearWingGroup.add(strut);
-});
-
-// Folding Wings (Flugmodus-Flügel)
-const leftWingGroup = new THREE.Group();
-leftWingGroup.position.set(-1.0, 0.45, 0);
-bodyGroup.add(leftWingGroup);
-const rightWingGroup = new THREE.Group();
-rightWingGroup.position.set(1.0, 0.45, 0);
-bodyGroup.add(rightWingGroup);
-
-const wingMeshGeo = new THREE.BoxGeometry(1.8, 0.05, 0.8);
-wingMeshGeo.translate(-0.9, 0, 0);
-
-const leftWing = new THREE.Mesh(wingMeshGeo, bodyM);
-leftWingGroup.add(leftWing);
-
-const rightWingGeo = wingMeshGeo.clone();
-rightWingGeo.translate(1.8, 0, 0);
-const rightWing = new THREE.Mesh(rightWingGeo, bodyM);
-rightWingGroup.add(rightWing);
-
-// Wingtip Thrusters
-const leftThruster = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.15, 0.6, 12), darkM);
-leftThruster.rotation.z = Math.PI / 2;
-leftThruster.position.set(-1.8, 0, 0);
-leftWingGroup.add(leftThruster);
-
-const rightThruster = leftThruster.clone();
-rightThruster.position.set(1.8, 0, 0);
-rightWingGroup.add(rightThruster);
-
-// Wheels & Suspension
-const wheels = [];
-const wheelPos = [
-  [-0.95, 0.34, -1.35, true],  // Front Left
-  [0.95, 0.34, -1.35, true],   // Front Right
-  [-0.98, 0.36, 1.35, false],  // Rear Left
-  [0.98, 0.36, 1.35, false]    // Rear Right
-];
-
-wheelPos.forEach(([x, y, z, isFront]) => {
-  const piv = new THREE.Group();
-  const sp = new THREE.Group();
-  piv.position.set(x, y, z);
-  piv.add(sp);
-  tilt.add(piv);
-
-  const tire = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.35, 0.3, 28), darkM);
-  tire.rotation.z = Math.PI / 2;
-  tire.castShadow = true;
-  sp.add(tire);
-
-  const rim = new THREE.Mesh(new THREE.CylinderGeometry(0.24, 0.24, 0.32, 16), chromeM);
-  rim.rotation.z = Math.PI / 2;
-  sp.add(rim);
-
-  wheels.push({ piv, sp, isFront });
-});
-
-// Thruster Flame Effects
-const thMat = new THREE.MeshBasicMaterial({ color: 0x00e5ff, transparent: true, opacity: 0.85, blending: THREE.AdditiveBlending, depthWrite: false });
-const nitroMat = new THREE.MeshBasicMaterial({ color: 0xff5500, transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending, depthWrite: false });
-
-const wingFlames = [];
-[leftWingGroup, rightWingGroup].forEach((wg, i) => {
-  const flame = new THREE.Mesh(new THREE.ConeGeometry(0.18, 1.2, 10), thMat);
-  flame.rotation.x = Math.PI;
-  flame.position.set(i === 0 ? -1.8 : 1.8, -0.6, 0);
-  flame.visible = false;
-  wg.add(flame);
-  wingFlames.push(flame);
-});
-
-const rearFlames = [-0.4, 0.4].map(x => {
-  const flame = new THREE.Mesh(new THREE.ConeGeometry(0.2, 1.4, 10), nitroMat);
-  flame.rotation.x = Math.PI / 2;
-  flame.position.set(x, 0.45, 2.4);
-  flame.visible = false;
-  tilt.add(flame);
-  return flame;
-});
-
-// Headlight Spotlights
-const hl = new THREE.SpotLight(0xd5f3ff, 2.5, 120, 0.45, 0.4);
-hl.position.set(0, 0.6, -2.0);
-hl.target.position.set(0, 0, -30);
-car.add(hl, hl.target);
-
-// Particle System
-const NP = 600, pp = new Float32Array(NP * 3).fill(-999), pc = new Float32Array(NP * 3), pl = new Float32Array(NP), pm = new Float32Array(NP).fill(1), pv = [...Array(NP)].map(() => new V3());
-let pi = 0;
-const pg = new THREE.BufferGeometry();
-pg.setAttribute('position', new THREE.BufferAttribute(pp, 3));
-pg.setAttribute('color', new THREE.BufferAttribute(pc, 3));
-const pts = new THREE.Points(pg, new THREE.PointsMaterial({ size: 0.8, vertexColors: true, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false }));
-pts.frustumCulled = false;
-S.add(pts);
-
-function emit(p, v, c, l) {
-  pp.set([p.x, p.y, p.z], pi * 3);
-  pv[pi].copy(v);
-  pc.set(c, pi * 3);
-  pl[pi] = pm[pi] = l;
-  pi = (pi + 1) % NP;
-}
-
-// Game State
-const K = {};
-let P = new V3(0, 0, 50), V = new V3(), Q = new THREE.Quaternion(), yaw = 0, gr = true;
-let Wv = new V3(), boost = 100, fuel = 100, score = 0, airT = 0, acc = { x: 0, y: 0, z: 0 };
-let steer = 0, spin = 0, fsp = 0, camMode = 0, shake = 0, wingAnim = 0;
-let boosting = false, flying = false, paintI = 0;
-const camDir = new V3(0, 0, -1), Y = new V3(0, 1, 0);
-
-const $ = id => document.getElementById(id);
-function pop(t) {
-  const e = $('pop'); e.textContent = t;
-  e.classList.remove('s'); void e.offsetWidth; e.classList.add('s');
-}
-function paint(i) { paintI = i % paintC.length; bodyM.color.setHex(paintC[paintI]); }
-
-function jump() {
-  if (gr) {
-    V.y += 12; gr = false; P.y += 0.1; airT = 0; acc = { x: 0, y: 0, z: 0 };
-    for (let i = 0; i < 12; i++) emit(P, new V3(rn() * 8, rn() * 3 + 1, rn() * 8), [0.4, 0.8, 1], 0.5);
-  }
-}
-
-function reset() {
-  P.set(0, 0, 50); V.set(0, 0, 0); Q.identity(); yaw = 0; gr = true;
-  boost = fuel = 100; Wv.set(0, 0, 0); camDir.set(0, 0, -1);
-}
-
-function down(c) {
-  if (!K[c]) {
-    if (c === 'Space') jump();
-    if (c === 'KeyG') reset();
-    if (c === 'KeyC') camMode = (camMode + 1) % 3;
-    if (/^Digit[1-5]$/.test(c)) paint(+c[5] - 1);
-    initAudio();
-  }
-  K[c] = 1;
-}
-
-addEventListener('keydown', e => { if (['Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.code)) e.preventDefault(); down(e.code); });
-addEventListener('keyup', e => K[e.code] = 0);
-
-document.querySelectorAll('#tc button').forEach(b => {
-  const c = b.dataset.k;
-  b.addEventListener('pointerdown', e => { e.preventDefault(); down(c); });
-  ['pointerup', 'pointerleave', 'pointercancel'].forEach(t => b.addEventListener(t, () => K[c] = 0));
-});
-
-// Sound Generator
-let AC, os, gn, o2, g2;
-function initAudio() {
-  if (AC) return;
-  try {
-    AC = new (window.AudioContext || window.webkitAudioContext)();
-    os = AC.createOscillator(); os.type = 'sawtooth'; gn = AC.createGain(); gn.gain.value = 0;
-    const f = AC.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = 800;
-    os.connect(f).connect(gn).connect(AC.destination); os.start();
-    o2 = AC.createOscillator(); o2.type = 'sine'; g2 = AC.createGain(); g2.gain.value = 0;
-    o2.connect(g2).connect(AC.destination); o2.start();
-  } catch (e) {}
-}
-
-// Collisions & Physics
-function hit() {
-  for (const b of B) {
-    if (P.y > b.h + 1) continue;
-    const dx = P.x - b.x, dz = P.z - b.z;
-    const ox = b.w / 2 + 1.4 - Math.abs(dx), oz = b.d / 2 + 1.4 - Math.abs(dz);
-    if (ox > 0 && oz > 0) {
-      if (ox < oz) { P.x += Math.sign(dx) * ox; V.x *= -0.4; }
-      else { P.z += Math.sign(dz) * oz; V.z *= -0.4; }
-      V.multiplyScalar(0.8);
-      shake = 0.6;
-    }
-  }
-}
-
-function land(gy) {
-  const up = Y.clone().applyQuaternion(Q).y;
-  P.y = gy;
-  const f = new V3(0, 0, -1).applyQuaternion(Q);
-  yaw = Math.atan2(-f.x, -f.z);
-  
-  if (up > 0.4) {
-    const n = (a) => Math.floor(Math.abs(a) / TAU + 0.35);
-    const nf = n(acc.x), nr = n(acc.z), ns = n(acc.y);
-    let s = 0; const p = [];
-    if (nf) { p.push((acc.x > 0 ? 'Backflip' : 'Frontflip') + (nf > 1 ? ' x' + nf : '')); s += 600 * nf; }
-    if (nr) { p.push('Barrel Roll' + (nr > 1 ? ' x' + nr : '')); s += 500 * nr; }
-    if (ns) { p.push('Spin 360' + (ns > 1 ? ' x' + ns : '')); s += 400 * ns; }
-    if (airT > 1.2) { p.push('Airtime ' + airT.toFixed(1) + 's'); s += Math.floor(airT * 150); }
-    if (s) { score += s; pop(p.join(' + ') + ' (+' + s + ')'); }
-    gr = true; V.y = 0;
-  } else {
-    V.multiplyScalar(0.3); V.y = 0; gr = true;
-    pop('Crashed!'); shake = 0.9;
-  }
-  acc = { x: 0, y: 0, z: 0 }; airT = 0;
-}
-
-function step(dt) {
-  const gas = K.KeyW || K.ArrowUp, brk = K.KeyS || K.ArrowDown;
-  const sx = ((K.KeyA || K.ArrowLeft) ? 1 : 0) - ((K.KeyD || K.ArrowRight) ? 1 : 0);
-  boosting = !!((K.ShiftLeft || K.ShiftRight) && boost > 2);
-  flying = !!(K.Space && fuel > 2 && !gr);
-
-  const F = new V3(0, 0, -1).applyQuaternion(Q), Uv = Y.clone().applyQuaternion(Q);
-
-  if (gr) {
-    const sy = Math.sin(yaw), cy = Math.cos(yaw);
-    const f = new V3(-sy, 0, -cy), r = new V3(cy, 0, -sy);
-    const hb = K.KeyX;
-    let fs = V.x * f.x + V.z * f.z, ls = V.x * r.x + V.z * r.z, force = 0;
-
-    if (gas) force += 42 * (1 - Math.min(Math.max(fs, 0) / 95, 1));
-    if (boosting) force += 75;
-    if (brk) force += fs > 1 ? -60 : -20;
-
-    fs += force * dt;
-    if (!gas && !brk && !boosting) fs *= (1 - 0.3 * dt);
-    if (hb) fs *= (1 - 0.85 * dt);
-    ls *= Math.exp(-(hb ? 1.5 : 7.0) * dt);
-
-    V.x = f.x * fs + r.x * ls; V.z = f.z * fs + r.z * ls; fsp = fs;
-    steer += (sx - steer) * Math.min(1, 10 * dt);
-    yaw += steer * (2.4 / (1 + Math.abs(fs) / 40)) * cl(fs / 5, -1, 1) * dt * (hb ? 1.6 : 1);
-    P.x += V.x * dt; P.z += V.z * dt; hit();
-
-    const gy = gY(P.x, P.z);
-    if (P.y - gy > 0.3) { gr = false; airT = 0; acc = { x: 0, y: 0, z: 0 }; }
-    else { V.y = cl((gy - P.y) / dt, -50, 50); P.y = gy; }
-
-    const n = new V3((gY(P.x - 1, P.z) - gY(P.x + 1, P.z)) / 2, 1, (gY(P.x, P.z - 1) - gY(P.x, P.z + 1)) / 2).normalize();
-    const ff = new V3(-Math.sin(yaw), 0, -Math.cos(yaw)), rr = new V3().crossVectors(ff, n).normalize(), fw = new V3().crossVectors(n, rr);
-    Q.slerp(new THREE.Quaternion().setFromRotationMatrix(new THREE.Matrix4().makeBasis(rr, n, fw.negate())), Math.min(1, 14 * dt));
-  } else {
-    airT += dt;
-    const tx = ((K.KeyS || K.ArrowDown) ? 1 : 0) - ((K.KeyW || K.ArrowUp) ? 1 : 0);
-    const tz = (K.KeyQ ? 1 : 0) - (K.KeyE ? 1 : 0);
-    const k = Math.min(1, 6 * dt);
-
-    Wv.x += (tx * 2.8 - Wv.x) * k;
-    Wv.y += (sx * 2.2 - Wv.y) * k;
-    Wv.z += (tz * 6.0 - Wv.z) * k;
-
-    Q.multiply(new THREE.Quaternion().setFromEuler(new THREE.Euler(Wv.x * dt, Wv.y * dt, Wv.z * dt))).normalize();
-    acc.x += Wv.x * dt; acc.y += Wv.y * dt; acc.z += Wv.z * dt;
-    V.y -= 22 * dt;
-
-    if (flying) {
-      V.addScaledVector(Uv.clone().lerp(Y, 0.6).normalize(), 42 * dt);
-      fuel -= 28 * dt; // Batterieverbrauch beim Fliegen
-      const sp = V.length();
-      V.lerp(F.clone().multiplyScalar(sp), Math.min(1, 0.8 * dt));
-    }
-    if (boosting) {
-      V.addScaledVector(F, 70 * dt);
-      boost -= 35 * dt;
-    }
-
-    V.multiplyScalar(1 - 0.05 * dt);
-    if (V.length() > 180) V.setLength(180);
-    P.addScaledVector(V, dt); hit();
-
-    const gy = gY(P.x, P.z);
-    if (P.y <= gy && V.y <= 0) land(gy);
-  }
-
-  // Regen & Consumables
-  if (!boosting) boost = Math.min(100, boost + (gr ? 15 : 5) * dt);
-  if (!flying) fuel = Math.min(100, fuel + (gr ? 8 : 2) * dt);
-
-  // Check Rings
-  for (const r of rings) {
-    if (r.t > 0) { r.t -= dt; if (r.t <= 0) r.m.visible = true; }
-    else if (P.distanceTo(r.m.position) < 7.0) {
-      r.t = 12; r.m.visible = false;
-      score += 400; boost = Math.min(100, boost + 50); fuel = Math.min(100, fuel + 40);
-      pop('Ring Pass! +400');
-      for (let i = 0; i < 35; i++) emit(r.m.position, new V3(rn() * 30, rn() * 30, rn() * 30), [0, 0.9, 1], 0.8);
-    }
-  }
-
-  // Check Energy Cubes
-  for (const ec of energyCubes) {
-    ec.m.rotation.y += 2 * dt;
-    ec.m.position.y = ec.baseY + Math.sin(Date.now() * 0.003 + ec.baseY) * 1.5;
-    if (ec.active && P.distanceTo(ec.m.position) < 5.0) {
-      ec.active = false; ec.m.visible = false;
-      fuel = 100; boost = 100; score += 250;
-      pop('Akku & Boost voll!');
-      setTimeout(() => { ec.active = true; ec.m.visible = true; }, 10000);
-    }
-  }
-
-  if (P.length() > 2200 || P.y < -30) reset();
-}
-
-function visuals(dt) {
-  car.position.copy(P); car.quaternion.copy(Q);
-  const sp = V.length();
-  tilt.rotation.z += (-steer * sp * 0.0015 * (gr ? 1 : 0) - tilt.rotation.z) * Math.min(1, 8 * dt);
-
-  spin += (gr ? fsp : V.dot(new V3(0, 0, -1).applyQuaternion(Q))) / 0.35 * dt;
-  wheels.forEach(w => {
-    w.sp.rotation.x = spin;
-    if (w.isFront) w.piv.rotation.y = steer * 0.45;
-  });
-
-  // Wing Expansion Animation (Flug-Modus)
-  const targetWing = flying ? 1 : 0;
-  wingAnim += (targetWing - wingAnim) * Math.min(1, 8 * dt);
-  leftWingGroup.rotation.z = wingAnim * (Math.PI / 2);
-  rightWingGroup.rotation.z = -wingAnim * (Math.PI / 2);
-
-  wingFlames.forEach(f => { f.visible = flying; if (flying) f.scale.set(1, 1 + Math.random() * 0.6, 1); });
-  rearFlames.forEach(f => { f.visible = boosting; if (boosting) f.scale.set(1, 1.2 + Math.random() * 0.8, 1); });
-  rearWingGroup.position.y = 0.75 + (boosting ? 0.12 : 0);
-
-  // Particles
-  if (boosting) {
-    [-0.4, 0.4].forEach(x => {
-      const p = car.localToWorld(new V3(x, 0.45, 2.4));
-      emit(p, new V3(rn() * 4, rn() * 4, 15).add(V), [1, 0.4, 0], 0.4);
-    });
-  }
-  if (flying) {
-    [-1.8, 1.8].forEach(x => {
-      const p = car.localToWorld(new V3(x, 0.2, 0));
-      emit(p, new V3(rn() * 2, -12, rn() * 2).add(V), [0, 0.8, 1], 0.35);
-    });
-  }
-
-  for (let i = 0; i < NP; i++) {
-    if (pl[i] > 0) {
-      pl[i] -= dt;
-      pp[i * 3] += pv[i].x * dt; pp[i * 3 + 1] += pv[i].y * dt; pp[i * 3 + 2] += pv[i].z * dt;
-      const f = Math.max(0, pl[i] / pm[i]);
-      pc[i * 3] *= f; pc[i * 3 + 1] *= f; pc[i * 3 + 2] *= f;
-      if (pl[i] <= 0) pp[i * 3 + 1] = -999;
-    }
-  }
-  pg.attributes.position.needsUpdate = true;
-  pg.attributes.color.needsUpdate = true;
-
-  sun.position.set(P.x - 80, P.y + 110, P.z - 50);
-  sun.target.position.copy(P);
-
-  if (AC && gn) {
-    const t = AC.currentTime;
-    os.frequency.setTargetAtTime(60 + sp * 4.8 + (boosting ? 80 : 0), t, 0.05);
-    gn.gain.setTargetAtTime(0.03 + Math.min(0.04, sp * 0.0005), t, 0.1);
-    o2.frequency.setTargetAtTime(400 + sp * 20 + (flying ? 300 : 0), t, 0.05);
-    g2.gain.setTargetAtTime(flying ? 0.035 : 0.005, t, 0.1);
-  }
-}
-
-function cam(dt) {
-  const f = new V3(0, 0, -1).applyQuaternion(Q); f.y = 0;
-  if (f.lengthSq() < 0.05) f.copy(camDir);
-  f.normalize();
-  camDir.lerp(f, Math.min(1, 4 * dt)).normalize();
-
-  const dists = [9.5, 17.0, 0], heights = [3.6, 7.0, 0];
-  if (camMode === 2) {
-    const tp = car.localToWorld(new V3(0, 0.8, -0.1));
-    C.position.copy(tp);
-    C.lookAt(tp.clone().add(new V3(0, 0, -10).applyQuaternion(Q)));
-  } else {
-    const tp = P.clone().addScaledVector(camDir, -dists[camMode]);
-    tp.y = P.y + heights[camMode];
-    C.position.lerp(tp, Math.min(1, 8 * dt));
-    C.lookAt(P.x + camDir.x * 6, P.y + 1.4, P.z + camDir.z * 6);
-  }
-
-  shake = Math.max(0, shake - dt * 2.5);
-  const sk = shake * 0.4 + (boosting ? 0.05 : 0);
-  C.position.add(new V3(rn() * sk, rn() * sk, rn() * sk));
-
-  const ft = 65 + Math.min(V.length(), 130) * 0.15 + (boosting ? 12 : 0);
-  C.fov += (ft - C.fov) * Math.min(1, 5 * dt);
-  C.updateProjectionMatrix();
-}
-
-function hud() {
-  $('k').textContent = Math.round(V.length() * 3.6);
-  $('a').textContent = Math.max(0, Math.round(P.y - gY(P.x, P.z)));
-  $('s').textContent = score;
-  $('bb').style.width = Math.max(0, boost) + '%';
-  $('fb').style.width = Math.max(0, fuel) + '%';
-  $('cm').textContent = ['Verfolger', 'Weitwinkel', 'Cockpit'][camMode];
-}
-
-function size() {
-  R.setSize(innerWidth, innerHeight);
-  C.aspect = innerHeight ? innerWidth / innerHeight : 1;
-  C.updateProjectionMatrix();
-}
-addEventListener('resize', size);
-size();
-
-const clock = new THREE.Clock();
-(function loop() {
-  requestAnimationFrame(loop);
-  const dt = Math.min(Math.max(clock.getDelta(), 0.001), 1 / 30);
-  step(dt);
-  visuals(dt);
-  cam(dt);
-  hud();
-  R.render(S, C);
-})();
-</script>
+    <div id="chat-container">
+        <h2>Meine eigene KI</h2>
+        <div id="chat-box"></div>
+        <div class="input-group">
+            <input type="text" id="user-input" placeholder="Frag mich etwas..." onkeypress="handleKeyPress(event)">
+            <button onclick="sendMessage()">Senden</button>
+        </div>
+    </div>
+
+    <script>
+        // Hier kommt gleich die KI-Logik hin!
+    </script>
 </body>
 </html>
