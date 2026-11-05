@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Meine Smarte KI</title>
+    <title>Meine Trainierbare KI</title>
     <style>
         * {
             box-sizing: border-box;
@@ -22,8 +22,8 @@
         }
         #chat-container {
             width: 100%;
-            max-width: 480px;
-            height: 580px;
+            max-width: 500px;
+            height: 650px;
             background: #1e293b;
             border-radius: 16px;
             display: flex;
@@ -55,6 +55,10 @@
             background: #22c55e;
             border-radius: 50%;
         }
+        .knowledge-count {
+            font-size: 0.8rem;
+            color: #94a3b8;
+        }
         #chat-box {
             flex: 1;
             padding: 15px;
@@ -64,7 +68,7 @@
             gap: 12px;
         }
         .message {
-            max-width: 80%;
+            max-width: 85%;
             padding: 10px 14px;
             border-radius: 12px;
             font-size: 0.95rem;
@@ -83,14 +87,32 @@
             color: #f1f5f9;
             border-bottom-left-radius: 2px;
         }
+        .system-msg {
+            align-self: center;
+            background: #475569;
+            color: #cbd5e1;
+            font-size: 0.8rem;
+            border-radius: 20px;
+            padding: 4px 12px;
+        }
+        .img-preview {
+            max-width: 100%;
+            border-radius: 8px;
+            margin-top: 8px;
+        }
+        .input-container {
+            background: #0f172a;
+            border-top: 1px solid #334155;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
         .input-group {
             display: flex;
-            padding: 15px;
-            background: #0f172a;
             gap: 8px;
-            border-top: 1px solid #334155;
         }
-        input {
+        input[type="text"] {
             flex: 1;
             padding: 12px;
             background: #1e293b;
@@ -100,21 +122,40 @@
             font-size: 0.95rem;
             outline: none;
         }
-        input:focus {
+        input[type="text"]:focus {
             border-color: #38bdf8;
         }
-        button {
-            padding: 12px 18px;
+        button, label.file-btn {
+            padding: 12px 16px;
             background: #0284c7;
             color: white;
             border: none;
             border-radius: 8px;
             cursor: pointer;
             font-weight: bold;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             transition: background 0.2s;
         }
-        button:hover {
+        button:hover, label.file-btn:hover {
             background: #0369a1;
+        }
+        input[type="file"] {
+            display: none;
+        }
+        .tools-bar {
+            display: flex;
+            gap: 8px;
+        }
+        .tool-btn {
+            background: #334155;
+            font-size: 0.75rem;
+            padding: 6px 10px;
+        }
+        .tool-btn:hover {
+            background: #475569;
         }
     </style>
 </head>
@@ -124,24 +165,70 @@
         <div class="chat-header">
             <div class="chat-header-title">
                 <div class="status-dot"></div>
-                <h2>Meine KI (Smart-Mode)</h2>
+                <h2>Smarte KI v2.0</h2>
+            </div>
+            <div class="knowledge-count" id="knowledge-count">Wissen: 0 Lektionen</div>
+        </div>
+        
+        <div id="chat-box">
+            <div class="message ai">
+                <strong>KI:</strong> Hallo! Ich kann aus deinen Antworten lernen, Fotos verarbeiten und online nach Daten suchen.<br><br>
+                💡 <em>Tipp:</em> Wenn ich etwas Falsches antworte, antworte mir mit: <code>lerne: [Frage] = [Antwort]</code>
             </div>
         </div>
-        <div id="chat-box">
-            <div class="message ai"><strong>KI:</strong> Hallo! Ich verstehe dich jetzt viel besser – sogar bei Tippfehlern. Schreib mir einfach etwas!</div>
-        </div>
-        <div class="input-group">
-            <input type="text" id="user-input" placeholder="Schreib was du willst..." onkeypress="handleKeyPress(event)">
-            <button onclick="sendMessage()">Senden</button>
+
+        <div class="input-container">
+            <div class="tools-bar">
+                <label class="file-btn tool-btn">
+                    📷 Bild laden
+                    <input type="file" id="image-input" accept="image/*" onchange="handleImageUpload(event)">
+                </label>
+                <button class="tool-btn" onclick="resetBrain()">🧠 Wissen zurücksetzen</button>
+            </div>
+            <div class="input-group">
+                <input type="text" id="user-input" placeholder="Schreibe eine Nachricht..." onkeypress="handleKeyPress(event)">
+                <button onclick="sendMessage()">Senden</button>
+            </div>
         </div>
     </div>
 
     <script>
-        const memory = {
-            userName: null
-        };
+        // Lokale Wissensdatenbank
+        let customBrain = JSON.parse(localStorage.getItem("ai_brain")) || {};
 
-        // Algorithmus zur Berechnung der Ähnlichkeit von zwei Wörtern (Levenshtein-Distanz)
+        function updateKnowledgeCount() {
+            const count = Object.keys(customBrain).length;
+            document.getElementById("knowledge-count").innerText = `Wissen: ${count} Lektionen`;
+        }
+        updateKnowledgeCount();
+
+        function saveBrain() {
+            localStorage.setItem("ai_brain", JSON.stringify(customBrain));
+            updateKnowledgeCount();
+        }
+
+        function resetBrain() {
+            if (confirm("Möchtest du das gesamte gelernte Wissen der KI zurücksetzen?")) {
+                customBrain = {};
+                saveBrain();
+                appendMessage("System", "Das Gedächtnis wurde zurückgesetzt.", "system-msg");
+            }
+        }
+
+        function appendMessage(sender, text, className, isHTML = false) {
+            const chatBox = document.getElementById("chat-box");
+            const msgDiv = document.createElement("div");
+            msgDiv.className = `message ${className}`;
+            if (isHTML) {
+                msgDiv.innerHTML = `<strong>${sender}:</strong> ${text}`;
+            } else {
+                msgDiv.innerText = `${sender}: ${text}`;
+            }
+            chatBox.appendChild(msgDiv);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        // Levenshtein-Distanz für unscharfe Wort-Übereinstimmung (Fuzzy Match)
         function getSimilarity(a, b) {
             if (a.length === 0) return b.length;
             if (b.length === 0) return a.length;
@@ -162,138 +249,97 @@
                     }
                 }
             }
-            const maxLength = Math.max(a.length, b.length);
-            return 1 - matrix[b.length][a.length] / maxLength;
+            return 1 - matrix[b.length][a.length] / Math.max(a.length, b.length);
         }
 
-        // Prüft, ob ein Wort im Text ähnlich zu den Ziel-Wörtern ist
-        function checkKeywords(words, targetKeywords, threshold = 0.7) {
-            for (let word of words) {
-                // Ausrufezeichen, Fragezeichen etc. entfernen
-                const cleanWord = word.replace(/[.,?!]/g, "");
-                for (let target of targetKeywords) {
-                    if (cleanWord === target || getSimilarity(cleanWord, target) >= threshold) {
-                        return true;
-                    }
-                }
+        // Internet-Zugriff über Wikipedia API
+        async function fetchWikipedia(query) {
+            try {
+                const url = `https://de.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(query)}`;
+                const response = await fetch(url);
+                if (!response.ok) return null;
+                const data = await response.json();
+                return data.extract || null;
+            } catch (e) {
+                return null;
             }
-            return false;
         }
 
-        function appendMessage(sender, text, className) {
-            const chatBox = document.getElementById("chat-box");
-            const msgDiv = document.createElement("div");
-            msgDiv.className = `message ${className}`;
-            msgDiv.innerHTML = `<strong>${sender}:</strong> ${text}`;
-            chatBox.appendChild(msgDiv);
-            chatBox.scrollTop = chatBox.scrollHeight;
-        }
+        async function getAIResponse(userInput) {
+            const raw = userInput.trim();
+            const lower = raw.toLowerCase();
 
-        function getAIResponse(userInput) {
-            const rawInput = userInput.trim();
-            const lowerInput = rawInput.toLowerCase();
-            const words = lowerInput.split(/\s+/);
-
-            // 1. Namen merken / abfragen
-            if (checkKeywords(words, ["hieße", "heisse", "name", "heiße"]) && (lowerInput.includes("ich") || lowerInput.includes("mein"))) {
-                const nameMatch = rawInput.match(/(?:heiße|heisse|name ist|bin)\s+([A-Za-zÄöüÄÖÜß]+)/i);
-                if (nameMatch && nameMatch[1]) {
-                    memory.userName = nameMatch[1];
-                    return `Freut mich sehr, ${memory.userName}! Ich hab mir deinen Namen gemerkt.`;
-                }
-            }
-
-            if (checkKeywords(words, ["name", "heiße", "heisse"]) && checkKeywords(words, ["wie", "wer", "mein"])) {
-                if (memory.userName) {
-                    return `Du heißt ${memory.userName}!`;
+            // 1. Manuelles Training (Syntax: "lerne: Frage = Antwort")
+            if (lower.startsWith("lerne:")) {
+                const content = raw.replace(/^lerne:/i, "").trim();
+                const parts = content.split("=");
+                if (parts.length === 2) {
+                    const q = parts[0].trim().toLowerCase();
+                    const a = parts[1].trim();
+                    customBrain[q] = a;
+                    saveBrain();
+                    return `Danke! Ich habe gelernt: Wenn jemand "${q}" fragt, antworte ich: "${a}".`;
                 } else {
-                    return "Du hast mir deinen Namen noch nicht verraten! Schreib z.B. 'Ich heiße Alex'.";
+                    return "Bitte nutze das Format: `lerne: Frage = Antwort`";
                 }
             }
 
-            // 2. Begrüßung
-            if (checkKeywords(words, ["hallo", "hi", "hey", "servus", "moin", "guten tag"])) {
-                const nameText = memory.userName ? ` ${memory.userName}` : "";
-                return `Hey${nameText}! Schön, von dir zu hören. Worüber wollen wir sprechen?`;
-            }
-
-            // 3. Wie geht's
-            if (checkKeywords(words, ["geht", "gehts", "befinden"]) || (checkKeywords(words, ["wie"]) && checkKeywords(words, ["du", "dir"]))) {
-                return "Mir geht's super! Ich verarbeite gerade Daten und lerne dazu. Wie geht es dir?";
-            }
-
-            // 4. Uhrzeit & Datum
-            if (checkKeywords(words, ["uhrzeit", "uhr", "zeit", "spät"])) {
-                const now = new Date();
-                return `Es ist jetzt genau ${now.toLocaleTimeString("de-DE", { hour: '2-digit', minute: '2-digit' })} Uhr.`;
-            }
-
-            if (checkKeywords(words, ["datum", "tag", "heute"])) {
-                const now = new Date();
-                return `Heute haben wir ${now.toLocaleDateString("de-DE", { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}.`;
-            }
-
-            // 5. Witze & Unterhaltung
-            if (checkKeywords(words, ["witz", "witze", "lustig"])) {
-                const witze = [
-                    "Warum können Geister so schlecht lügen? Weil man durch sie hindurchsehen kann!",
-                    "Was macht ein Pirat am Computer? Er drückt die Enter-Taste!",
-                    "Treffen sich zwei Stifte. Sagt der eine: 'Mir reichts, ich gehe in den Ruhestand!'"
-                ];
-                return witze[Math.floor(Math.random() * witze.length)];
-            }
-
-            if (checkKeywords(words, ["münze", "kopf", "zahl", "werfen"])) {
-                const res = Math.random() < 0.5 ? "Kopf" : "Zahl";
-                return `Ich habe eine Münze geworfen: Es ist **${res}**!`;
-            }
-
-            // 6. Mathe-Rechner
-            if (checkKeywords(words, ["rechne", "berechne", "mathe"]) || lowerInput.includes("+") || lowerInput.includes("-") || lowerInput.includes("*") || lowerInput.includes("/")) {
-                const mathExpr = lowerInput.replace(/[^0-9\+\-\*\/\(\)\.]/g, "");
-                if (mathExpr.length > 0) {
-                    try {
-                        const res = Function(`'use strict'; return (${mathExpr})`)();
-                        return `Das Ergebnis ist: ${res}`;
-                    } catch (e) {
-                        // Kein gültiger Mathe-Ausdruck, weitergehen
-                    }
+            // 2. Suche in gelernten Antworten (Gedächtnis)
+            for (let key in customBrain) {
+                if (getSimilarity(lower, key) > 0.75 || lower.includes(key)) {
+                    return customBrain[key];
                 }
             }
 
-            // 7. Wer bist du?
-            if (checkKeywords(words, ["wer", "was"]) && checkKeywords(words, ["bist", "kannst", "machst"])) {
-                return "Ich bin deine eigene KI! Ich kann mir Sachen merken, rechnen, dir Uhrzeit/Datum sagen, Witze erzählen und Tippfehler in deinen Fragen verstehen!";
+            // 3. Internet-Recherche (z. B. "suche: Berlin" oder "was ist [...]")
+            if (lower.startsWith("suche ") || lower.startsWith("was ist ") || lower.startsWith("wer ist ")) {
+                const topic = raw.replace(/^(suche|was ist|wer ist)\s+/i, "").replace("?", "").trim();
+                appendMessage("KI", "🌐 Suche im Internet...", "ai");
+                const wikiResult = await fetchWikipedia(topic);
+                if (wikiResult) {
+                    return `**Internet-Ergebnis (${topic}):**\n${wikiResult}`;
+                }
             }
 
-            // 8. Dynamischer Bot-Antwort-Generator für unbekannte Fragen (Raten)
-            const fallbackAntworten = [
-                `Du sprichst über "${rawInput}". Erzähl mir mehr darüber!`,
-                `Gute Frage! Meinst du etwas Bestimmtes im Bereich ${words[0] || 'Thema'}?`,
-                `Ich verstehe den Satz "${rawInput}" zwar noch nicht komplett, aber ich lerne ständig dazu!`,
-                `Das klingt interessant! Kannst du mir das genauer erklären?`
-            ];
-            return fallbackAntworten[Math.floor(Math.random() * fallbackAntworten.length)];
+            // 4. Standard-Logik
+            if (lower.includes("hallo") || lower.includes("hi")) return "Hallo! Wie kann ich dir heute helfen?";
+            if (lower.includes("uhr")) return `Es ist ${new Date().toLocaleTimeString("de-DE", {hour:'2-digit', minute:'2-digit'})} Uhr.`;
+            if (lower.includes("datum")) return `Heute ist der ${new Date().toLocaleDateString("de-DE")}.`;
+
+            // 5. Unbekannte Frage -> Bietet Training an
+            return `Das weiß ich noch nicht. Du kannst es mir aber beibringen!\nSchreib einfach:\n\`lerne: ${raw} = [Deine Antwort]\``;
         }
 
-        function sendMessage() {
+        async function sendMessage() {
             const inputField = document.getElementById("user-input");
             const text = inputField.value.trim();
             if (text === "") return;
 
-            appendMessage(memory.userName || "Du", text, "user");
+            appendMessage("Du", text, "user");
             inputField.value = "";
 
-            setTimeout(() => {
-                const aiReply = getAIResponse(text);
-                appendMessage("KI", aiReply, "ai");
-            }, 300);
+            const aiReply = await getAIResponse(text);
+            appendMessage("KI", aiReply, "ai", true);
+        }
+
+        function handleImageUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const imgUrl = e.target.result;
+                appendMessage("Du", `Bild hochgeladen:<br><img src="${imgUrl}" class="img-preview">`, "user", true);
+
+                setTimeout(() => {
+                    appendMessage("KI", `Ich habe das Bild empfangen (${file.name}, ${Math.round(file.size / 1024)} KB). Du kannst mir beibringen, wie ich auf bestimmte Bilder reagieren soll!`, "ai");
+                }, 500);
+            };
+            reader.readAsDataURL(file);
         }
 
         function handleKeyPress(event) {
-            if (event.key === "Enter") {
-                sendMessage();
-            }
+            if (event.key === "Enter") sendMessage();
         }
     </script>
 </body>
