@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Meine eigene KI</title>
+    <title>Meine Smarte KI</title>
     <style>
         * {
             box-sizing: border-box;
@@ -22,8 +22,8 @@
         }
         #chat-container {
             width: 100%;
-            max-width: 450px;
-            height: 550px;
+            max-width: 480px;
+            height: 580px;
             background: #1e293b;
             border-radius: 16px;
             display: flex;
@@ -36,6 +36,11 @@
             background: #0f172a;
             padding: 15px 20px;
             border-bottom: 1px solid #334155;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .chat-header-title {
             display: flex;
             align-items: center;
             gap: 10px;
@@ -117,14 +122,16 @@
 
     <div id="chat-container">
         <div class="chat-header">
-            <div class="status-dot"></div>
-            <h2>Meine eigene KI</h2>
+            <div class="chat-header-title">
+                <div class="status-dot"></div>
+                <h2>Meine KI (Smart-Mode)</h2>
+            </div>
         </div>
         <div id="chat-box">
-            <div class="message ai"><strong>KI:</strong> Hallo! Ich bin deine eigene KI. Frag mich etwas oder sag mir deinen Namen!</div>
+            <div class="message ai"><strong>KI:</strong> Hallo! Ich verstehe dich jetzt viel besser – sogar bei Tippfehlern. Schreib mir einfach etwas!</div>
         </div>
         <div class="input-group">
-            <input type="text" id="user-input" placeholder="Schreib etwas..." onkeypress="handleKeyPress(event)">
+            <input type="text" id="user-input" placeholder="Schreib was du willst..." onkeypress="handleKeyPress(event)">
             <button onclick="sendMessage()">Senden</button>
         </div>
     </div>
@@ -133,6 +140,45 @@
         const memory = {
             userName: null
         };
+
+        // Algorithmus zur Berechnung der Ähnlichkeit von zwei Wörtern (Levenshtein-Distanz)
+        function getSimilarity(a, b) {
+            if (a.length === 0) return b.length;
+            if (b.length === 0) return a.length;
+            const matrix = [];
+            for (let i = 0; i <= b.length; i++) matrix[i] = [i];
+            for (let j = 0; j <= a.length; j++) matrix[0][j] = j;
+
+            for (let i = 1; i <= b.length; i++) {
+                for (let j = 1; j <= a.length; j++) {
+                    if (b.charAt(i - 1) === a.charAt(j - 1)) {
+                        matrix[i][j] = matrix[i - 1][j - 1];
+                    } else {
+                        matrix[i][j] = Math.min(
+                            matrix[i - 1][j - 1] + 1,
+                            matrix[i][j - 1] + 1,
+                            matrix[i - 1][j] + 1
+                        );
+                    }
+                }
+            }
+            const maxLength = Math.max(a.length, b.length);
+            return 1 - matrix[b.length][a.length] / maxLength;
+        }
+
+        // Prüft, ob ein Wort im Text ähnlich zu den Ziel-Wörtern ist
+        function checkKeywords(words, targetKeywords, threshold = 0.7) {
+            for (let word of words) {
+                // Ausrufezeichen, Fragezeichen etc. entfernen
+                const cleanWord = word.replace(/[.,?!]/g, "");
+                for (let target of targetKeywords) {
+                    if (cleanWord === target || getSimilarity(cleanWord, target) >= threshold) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
 
         function appendMessage(sender, text, className) {
             const chatBox = document.getElementById("chat-box");
@@ -145,84 +191,89 @@
 
         function getAIResponse(userInput) {
             const rawInput = userInput.trim();
-            const input = rawInput.toLowerCase();
+            const lowerInput = rawInput.toLowerCase();
+            const words = lowerInput.split(/\s+/);
 
-            // 1. Namen merken
-            if (input.includes("ich heiße ") || input.includes("mein name ist ")) {
-                const words = rawInput.split(" ");
-                const name = words[words.length - 1];
-                memory.userName = name;
-                return `Freut mich sehr, ${name}! Ich habe mir deinen Namen gemerkt.`;
-            }
-
-            if (input.includes("wie heiße ich") || input.includes("weißt du meinen namen")) {
-                if (memory.userName) {
-                    return `Du heißt ${memory.userName}!`;
-                } else {
-                    return "Das hast du mir noch nicht erzählt. Sag zum Beispiel: 'Ich heiße Alex'.";
+            // 1. Namen merken / abfragen
+            if (checkKeywords(words, ["hieße", "heisse", "name", "heiße"]) && (lowerInput.includes("ich") || lowerInput.includes("mein"))) {
+                const nameMatch = rawInput.match(/(?:heiße|heisse|name ist|bin)\s+([A-Za-zÄöüÄÖÜß]+)/i);
+                if (nameMatch && nameMatch[1]) {
+                    memory.userName = nameMatch[1];
+                    return `Freut mich sehr, ${memory.userName}! Ich hab mir deinen Namen gemerkt.`;
                 }
             }
 
-            // 2. Uhrzeit und Datum
-            if (input.includes("uhr") || input.includes("zeit")) {
-                const now = new Date();
-                return `Es ist aktuell ${now.toLocaleTimeString("de-DE", { hour: '2-digit', minute: '2-digit' })} Uhr.`;
+            if (checkKeywords(words, ["name", "heiße", "heisse"]) && checkKeywords(words, ["wie", "wer", "mein"])) {
+                if (memory.userName) {
+                    return `Du heißt ${memory.userName}!`;
+                } else {
+                    return "Du hast mir deinen Namen noch nicht verraten! Schreib z.B. 'Ich heiße Alex'.";
+                }
             }
 
-            if (input.includes("datum") || input.includes("welcher tag")) {
-                const now = new Date();
-                return `Heute ist ${now.toLocaleDateString("de-DE", { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}.`;
+            // 2. Begrüßung
+            if (checkKeywords(words, ["hallo", "hi", "hey", "servus", "moin", "guten tag"])) {
+                const nameText = memory.userName ? ` ${memory.userName}` : "";
+                return `Hey${nameText}! Schön, von dir zu hören. Worüber wollen wir sprechen?`;
             }
 
-            // 3. Mini-Tools & Witze
-            if (input.includes("witz")) {
+            // 3. Wie geht's
+            if (checkKeywords(words, ["geht", "gehts", "befinden"]) || (checkKeywords(words, ["wie"]) && checkKeywords(words, ["du", "dir"]))) {
+                return "Mir geht's super! Ich verarbeite gerade Daten und lerne dazu. Wie geht es dir?";
+            }
+
+            // 4. Uhrzeit & Datum
+            if (checkKeywords(words, ["uhrzeit", "uhr", "zeit", "spät"])) {
+                const now = new Date();
+                return `Es ist jetzt genau ${now.toLocaleTimeString("de-DE", { hour: '2-digit', minute: '2-digit' })} Uhr.`;
+            }
+
+            if (checkKeywords(words, ["datum", "tag", "heute"])) {
+                const now = new Date();
+                return `Heute haben wir ${now.toLocaleDateString("de-DE", { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}.`;
+            }
+
+            // 5. Witze & Unterhaltung
+            if (checkKeywords(words, ["witz", "witze", "lustig"])) {
                 const witze = [
                     "Warum können Geister so schlecht lügen? Weil man durch sie hindurchsehen kann!",
                     "Was macht ein Pirat am Computer? Er drückt die Enter-Taste!",
-                    "Was ist grün und tippt am PC? Ein Programm-Frosch!"
+                    "Treffen sich zwei Stifte. Sagt der eine: 'Mir reichts, ich gehe in den Ruhestand!'"
                 ];
                 return witze[Math.floor(Math.random() * witze.length)];
             }
 
-            if (input.includes("münze") || input.includes("kopf oder zahl")) {
-                const result = Math.random() < 0.5 ? "Kopf" : "Zahl";
-                return `Ich habe eine Münze geworfen: Es ist **${result}**!`;
+            if (checkKeywords(words, ["münze", "kopf", "zahl", "werfen"])) {
+                const res = Math.random() < 0.5 ? "Kopf" : "Zahl";
+                return `Ich habe eine Münze geworfen: Es ist **${res}**!`;
             }
 
-            // 4. Rechner
-            if (input.startsWith("berechne ") || input.startsWith("rechne ")) {
-                const mathExpr = input.replace("berechne ", "").replace("rechne ", "").trim();
-                try {
-                    if (/^[0-9\s\+\-\*\/\(\)\.]+$/.test(mathExpr)) {
+            // 6. Mathe-Rechner
+            if (checkKeywords(words, ["rechne", "berechne", "mathe"]) || lowerInput.includes("+") || lowerInput.includes("-") || lowerInput.includes("*") || lowerInput.includes("/")) {
+                const mathExpr = lowerInput.replace(/[^0-9\+\-\*\/\(\)\.]/g, "");
+                if (mathExpr.length > 0) {
+                    try {
                         const res = Function(`'use strict'; return (${mathExpr})`)();
-                        return `Das Ergebnis von ${mathExpr} ist ${res}.`;
-                    } else {
-                        return "Bitte gib nur Zahlen und normale Rechenzeichen ein (+, -, *, /).";
+                        return `Das Ergebnis ist: ${res}`;
+                    } catch (e) {
+                        // Kein gültiger Mathe-Ausdruck, weitergehen
                     }
-                } catch (e) {
-                    return "Das konnte ich nicht ausrechnen.";
                 }
             }
 
-            // 5. Allgemeine Gesprächsfetzen
-            if (input.includes("hallo") || input.includes("hi") || input.includes("hey")) {
-                const greeting = memory.userName ? `Hallo ${memory.userName}!` : "Hallo!";
-                return `${greeting} Wie kann ich dir helfen?`;
+            // 7. Wer bist du?
+            if (checkKeywords(words, ["wer", "was"]) && checkKeywords(words, ["bist", "kannst", "machst"])) {
+                return "Ich bin deine eigene KI! Ich kann mir Sachen merken, rechnen, dir Uhrzeit/Datum sagen, Witze erzählen und Tippfehler in deinen Fragen verstehen!";
             }
 
-            if (input.includes("wie gehts") || input.includes("wie geht es dir")) {
-                return "Mir geht es super! Ich bin bereit für deine Befehle.";
-            }
-
-            if (input.includes("wer bist du")) {
-                return "Ich bin deine eigene KI, die direkt auf deiner GitHub-Website läuft!";
-            }
-
-            if (input.includes("hilfe") || input.includes("was kannst du")) {
-                return "Ich kann:\n- Mir deinen Namen merken\n- Uhrzeit & Datum sagen\n- Witze erzählen\n- Eine Münze werfen ('münze')\n- Rechnen (z. B. 'rechne 25 * 4')";
-            }
-
-            return `Interessante Frage! Ich kenne die Antwort auf "${userInput}" noch nicht, aber wir können sie mir beibringen!`;
+            // 8. Dynamischer Bot-Antwort-Generator für unbekannte Fragen (Raten)
+            const fallbackAntworten = [
+                `Du sprichst über "${rawInput}". Erzähl mir mehr darüber!`,
+                `Gute Frage! Meinst du etwas Bestimmtes im Bereich ${words[0] || 'Thema'}?`,
+                `Ich verstehe den Satz "${rawInput}" zwar noch nicht komplett, aber ich lerne ständig dazu!`,
+                `Das klingt interessant! Kannst du mir das genauer erklären?`
+            ];
+            return fallbackAntworten[Math.floor(Math.random() * fallbackAntworten.length)];
         }
 
         function sendMessage() {
