@@ -75,5 +75,50 @@
     <script>
         // Hier kommt gleich die KI-Logik hin!
     </script>
+    function appendMessage(sender, text, className) {
+    const chatBox = document.getElementById("chat-box");
+    const msgDiv = document.createElement("div");
+    msgDiv.className = `message ${className}`;
+    msgDiv.innerHTML = `<strong>${sender}:</strong> ${text}`;
+    chatBox.appendChild(msgDiv);
+    chatBox.scrollTop = chatBox.scrollHeight;
+}
+
+function getAIResponse(userInput) {
+    const input = userInput.toLowerCase();
+    
+    // Hier kannst du die "Persönlichkeit" und Antworten deiner KI bestimmen!
+    if (input.includes("hallo") || input.includes("hi")) {
+        return "Hallo! Schön, dass du da bist. Was kann ich für dich tun?";
+    } else if (input.includes("wie geht es dir")) {
+        return "Mir geht es super als Code auf deiner Website! Und dir?";
+    } else if (input.includes("wer bist du")) {
+        return "Ich bin deine ganz persönliche KI, die du selbst programmiert hast!";
+    } else {
+        // Standard-Antwort, wenn sie etwas nicht weiß
+        return `Das ist eine interessante Frage! Ich lerne noch dazu, aber ich habe verstanden: "${userInput}"`;
+    }
+}
+
+function sendMessage() {
+    const inputField = document.getElementById("user-input");
+    const text = inputField.value.trim();
+    if (text === "") return;
+
+    appendMessage("Du", text, "user");
+    inputField.value = "";
+
+    // Kleine Verzögerung für den "Denk-Effekt"
+    setTimeout(() => {
+        const aiReply = getAIResponse(text);
+        appendMessage("KI", aiReply, "ai");
+    }, 500);
+}
+
+function handleKeyPress(event) {
+    if (event.key === "Enter") {
+        sendMessage();
+    }
+}
 </body>
 </html>
