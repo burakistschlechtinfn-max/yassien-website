@@ -1,79 +1,9 @@
-<!DOCTYPE html>
-<html lang="de">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Meine eigene KI</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #1e1e2f;
-            color: white;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            margin: 0;
-        }
-        #chat-container {
-            width: 400px;
-            max-width: 90%;
-            background: #2a2a40;
-            border-radius: 10px;
-            padding: 20px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-        }
-        #chat-box {
-            height: 300px;
-            overflow-y: auto;
-            border: 1px solid #444;
-            padding: 10px;
-            margin-bottom: 10px;
-            border-radius: 5px;
-            background: #1f1f30;
-        }
-        .message {
-            margin-bottom: 10px;
-            padding: 8px;
-            border-radius: 5px;
-        }
-        .user { background: #3b82f6; text-align: right; }
-        .ai { background: #10b981; }
-        .input-group {
-            display: flex;
-        }
-        input {
-            flex: 1;
-            padding: 10px;
-            border: none;
-            border-radius: 5px 0 0 5px;
-            outline: none;
-        }
-        button {
-            padding: 10px 15px;
-            background: #6366f1;
-            color: white;
-            border: none;
-            border-radius: 0 5px 5px 0;
-            cursor: pointer;
-        }
-        button:hover { background: #4f46e5; }
-    </style>
-</head>
-<body>
+// Speicher für das Gedächtnis der KI
+const memory = {
+    userName: null
+};
 
-    <div id="chat-container">
-        <h2>Meine eigene KI</h2>
-        <div id="chat-box"></div>
-        <div class="input-group">
-            <input type="text" id="user-input" placeholder="Frag mich etwas..." onkeypress="handleKeyPress(event)">
-            <button onclick="sendMessage()">Senden</button>
-        </div>
-    </div>
-
-    <script>
-       function appendMessage(sender, text, className) {
+function appendMessage(sender, text, className) {
     const chatBox = document.getElementById("chat-box");
     const msgDiv = document.createElement("div");
     msgDiv.className = `message ${className}`;
@@ -83,19 +13,87 @@
 }
 
 function getAIResponse(userInput) {
-    const input = userInput.toLowerCase();
-    
-    // Hier kannst du die "Persönlichkeit" und Antworten deiner KI bestimmen!
-    if (input.includes("hallo") || input.includes("hi")) {
-        return "Hallo! Schön, dass du da bist. Was kann ich für dich tun?";
-    } else if (input.includes("wie geht es dir")) {
-        return "Mir geht es super als Code auf deiner Website! Und dir?";
-    } else if (input.includes("wer bist du")) {
-        return "Ich bin deine ganz persönliche KI, die du selbst programmiert hast!";
-    } else {
-        // Standard-Antwort, wenn sie etwas nicht weiß
-        return `Das ist eine interessante Frage! Ich lerne noch dazu, aber ich habe verstanden: "${userInput}"`;
+    const rawInput = userInput.trim();
+    const input = rawInput.toLowerCase();
+
+    // 1. Namens-Erkennung & Gedächtnis
+    if (input.includes("ich heiße ") || input.includes("mein name ist ")) {
+        const words = rawInput.split(" ");
+        const name = words[words.length - 1];
+        memory.userName = name;
+        return `Freut mich sehr, dich kennenzulernen, ${name}! Ich werde mir deinen Namen merken.`;
     }
+
+    if (input.includes("wie heiße ich") || input.includes("weißt du meinen namen")) {
+        if (memory.userName) {
+            return `Du heißt ${memory.userName}!`;
+        } else {
+            return "Das hast du mir noch nicht verraten. Sag es mir einfach (z. B. 'Ich heiße Alex').";
+        }
+    }
+
+    // 2. Zeit & Datum
+    if (input.includes("uhr") || input.includes("wie viel uhr") || input.includes("zeit")) {
+        const now = new Date();
+        return `Es ist jetzt ${now.toLocaleTimeString("de-DE", { hour: '2-digit', minute: '2-digit' })} Uhr.`;
+    }
+
+    if (input.includes("datum") || input.includes("welcher tag")) {
+        const now = new Date();
+        return `Heute ist ${now.toLocaleDateString("de-DE", { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}.`;
+    }
+
+    // 3. Mini-Spiele & Nützliches
+    if (input.includes("witz")) {
+        const witze = [
+            "Warum können Geister so schlecht lügen? Weil man durch sie hindurchsehen kann!",
+            "Was macht ein Pirat am Computer? Er drückt die Enter-Taste!",
+            "Treffen sich zwei Stifte. Sagt der eine: 'Mir reichts, ich gehe in den Ruhestand!'"
+        ];
+        return witze[Math.floor(Math.random() * witze.length)];
+    }
+
+    if (input.includes("münze") || input.includes("kopf oder zahl")) {
+        const result = Math.random() < 0.5 ? "Kopf" : "Zahl";
+        return `Ich habe eine Münze geworfen: Es ist **${result}**!`;
+    }
+
+    // 4. Einfacher Taschenrechner (z. B. "berechne 5 + 5")
+    if (input.startsWith("berechne ") || input.startsWith("rechne ")) {
+        const mathExpr = input.replace("berechne ", "").replace("rechne ", "").trim();
+        try {
+            // Sichere Auswertung von einfachen Mathe-Ausdrücken
+            if (/^[0-9\s\+\-\*\/\(\)\.]+$/.test(mathExpr)) {
+                const res = Function(`'use strict'; return (${mathExpr})`)();
+                return `Das Ergebnis von ${mathExpr} ist ${res}.`;
+            } else {
+                return "Bitte gib nur einfache Zahlen und Rechenzeichen (+, -, *, /) ein.";
+            }
+        } catch (e) {
+            return "Das konnte ich leider nicht ausrechnen. Überprüfe die Aufgabe nochmal!";
+        }
+    }
+
+    // 5. Standard-Konversation
+    if (input.includes("hallo") || input.includes("hi") || input.includes("hey")) {
+        const greeting = memory.userName ? `Hallo ${memory.userName}!` : "Hallo!";
+        return `${greeting} Wie kann ich dir heute helfen?`;
+    }
+
+    if (input.includes("wie gehts") || input.includes("wie geht es dir")) {
+        return "Mir geht es blendend! Ich lerne mit jedem Update von dir dazu. Und wie geht es dir?";
+    }
+
+    if (input.includes("wer bist du") || input.includes("dein name")) {
+        return "Ich bin deine eigene, selbstprogrammierte KI auf deiner GitHub-Website!";
+    }
+
+    if (input.includes("hilfe") || input.includes("was kannst du")) {
+        return "Ich kann folgendes:\n- Dir sagen, wie viel Uhr es ist oder welches Datum wir haben\n- Meinen Namen / deinen Namen merken\n- Witze erzählen oder eine Münze werfen ('münze')\n- Rechnen (z. B. 'rechne 12 * 4')";
+    }
+
+    // 6. Rückfall-Antwort
+    return `Das ist interessant! Ich habe noch keine genaue Regel für "${userInput}", aber du kannst sie mir im Code einbauen!`;
 }
 
 function sendMessage() {
@@ -103,14 +101,14 @@ function sendMessage() {
     const text = inputField.value.trim();
     if (text === "") return;
 
-    appendMessage("Du", text, "user");
+    appendMessage(memory.userName || "Du", text, "user");
     inputField.value = "";
 
-    // Kleine Verzögerung für den "Denk-Effekt"
+    // Simulation von Tippzeit
     setTimeout(() => {
         const aiReply = getAIResponse(text);
         appendMessage("KI", aiReply, "ai");
-    }, 500);
+    }, 400);
 }
 
 function handleKeyPress(event) {
@@ -118,6 +116,3 @@ function handleKeyPress(event) {
         sendMessage();
     }
 }
-    </script>
-</body>
-</html>
